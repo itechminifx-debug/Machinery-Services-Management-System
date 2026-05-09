@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | Sales Manager Pro</title>
+    <style>
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --primary-light: #6366f1; --success: #10b981; --danger: #ef4444; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 900px; margin: 0 auto; }
+        .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar h1 { font-size: 22px; color: var(--text); }
+        .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
+
+        .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--card); border-radius: 12px; padding: 5px; box-shadow: var(--shadow); }
+        .tab { flex: 1; padding: 12px; border: none; background: transparent; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-light); transition: all 0.2s; }
+        .tab.active { background: var(--primary); color: white; }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .card { background: var(--card); border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow); }
+        .card h3 { color: var(--text); font-size: 17px; margin-bottom: 16px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 10px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: 600; color: var(--text); margin-bottom: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group select { width: 100%; padding: 11px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--card); }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        table th { background: var(--primary); color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
+        table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+        table tr:hover td { background: #f8fafc; }
+
+        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); padding: 5px 10px; font-size: 10px; }
+
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; font-weight: 600; z-index: 1000; display: none; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
+        @media (max-width: 650px) { .form-row { grid-template-columns: 1fr 1fr; } .tabs { flex-wrap: wrap; } .tab { font-size: 11px; padding: 10px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar"><h1>⚙️ Admin Panel</h1><a href="dashboard.html">🔙 Dashboard</a></div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('machines')">🏭 Machines</button>
+            <button class="tab" onclick="switchTab('workers')">👷 Workers</button>
+            <button class="tab" onclick="switchTab('users')">👤 Users</button>
+            <button class="tab" onclick="switchTab('backup')">💾 Backup</button>
+        </div>
+
+        <!-- MACHINES PANEL -->
+        <div id="panel-machines" class="panel active">
+            <div class="card">
+                <h3>➕ Add Machine</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Machine Name</label><input type="text" id="machineName" placeholder="e.g., Corn Mill - Dry"></div>
+                    <div class="form-group"><label>Unit</label><select id="machineUnit"><option value="bowl(s)">Bowl(s)</option><option value="bucket(s)">Bucket(s)</option><option value="wrap(s)">Wrap(s)</option><option value="piece(s)">Piece(s)</option><option value="kg">Kilogram(s)</option><option value="load(s)">Load(s)</option></select></div>
+                    <div class="form-group"><label>Price (GHS)</label><input type="number" id="machinePrice" placeholder="e.g., 2.00" step="0.01"></div>
+                    <button class="btn btn-success" onclick="addMachine()" style="height:42px;">➕ Add</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>📋 Machine List</h3>
+                <div style="overflow-x:auto;">
+                    <table><thead><tr><th>Machine</th><th>Unit</th><th>Price (GHS)</th><th>Action</th></tr></thead>
+                        <tbody id="machinesTable"><tr><td colspan="4" style="text-align:center;color:#999;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORKERS PANEL -->
+        <div id="panel-workers" class="panel">
+            <div class="card">
+                <h3>➕ Add Worker</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Worker Name</label><input type="text" id="workerName" placeholder="e.g., Kwame Asante"></div>
+                    <div class="form-group"><label>Daily Rate (GHS)</label><input type="number" id="workerRate" placeholder="e.g., 30" step="0.01"></div>
+                    <button class="btn btn-success" onclick="addWorker()" style="height:42px;">➕ Add</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>📋 Worker List</h3>
+                <table><thead><tr><th>#</th><th>Name</th><th>Daily Rate</th><th>Action</th></tr></thead>
+                    <tbody id="workersTable"><tr><td colspan="4" style="text-align:center;color:#999;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- USERS PANEL -->
+        <div id="panel-users" class="panel">
+            <div class="card">
+                <h3>➕ Add User</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="newUserName" placeholder="e.g., Mr. Mensah"></div>
+                    <div class="form-group"><label>Password</label><input type="text" id="newUserPass" placeholder="Set password" value="1234"></div>
+                    <button class="btn btn-success" onclick="addUser()" style="height:42px;">➕ Add</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>📋 User List</h3>
+                <table><thead><tr><th>#</th><th>Name</th><th>Password</th><th>Action</th></tr></thead>
+                    <tbody id="usersTable"><tr><td colspan="4" style="text-align:center;color:#999;">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BACKUP PANEL -->
+        <div id="panel-backup" class="panel">
+            <div class="card">
+                <h3>💾 Data Backup & Restore</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+                    <div style="background:#e8f5e9;padding:20px;border-radius:12px;text-align:center;">
+                        <div style="font-size:40px;">📥</div><h4>Download Backup</h4>
+                        <button class="btn btn-success" onclick="backupAll()" style="margin-top:10px;">📥 Backup</button>
+                    </div>
+                    <div style="background:#fff3e0;padding:20px;border-radius:12px;text-align:center;">
+                        <div style="font-size:40px;">📤</div><h4>Restore Backup</h4>
+                        <input type="file" id="restoreFile" accept=".json" style="display:none;" onchange="restoreAll(event)">
+                        <button class="btn btn-primary" onclick="document.getElementById('restoreFile').click()" style="margin-top:10px;">📤 Restore</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var machines = [], workers = [], users = [];
+
+        window.onload = function() { loadAll(); };
+
+        function loadAll() {
+            machines = JSON.parse(localStorage.getItem('milling_machines')) || getDefaultMachines();
+            workers = JSON.parse(localStorage.getItem('milling_workers')) || [];
+            users = JSON.parse(localStorage.getItem('milling_users')) || getDefaultUsers();
+            loadMachinesTable(); loadWorkersTable(); loadUsersTable();
+        }
+
+        function getDefaultMachines() {
+            var d = [
+                { name: 'Corn Mill - Dry', unit: 'bowl(s)', price: 2.00 }, { name: 'Corn Mill - Wet', unit: 'bowl(s)', price: 3.00 },
+                { name: 'Palm Nut Peeler', unit: 'bucket(s)', price: 5.00 }, { name: 'Palm Nut Masher', unit: 'bucket(s)', price: 5.00 },
+                { name: 'Granite Machine', unit: 'load(s)', price: 10.00 }, { name: 'Fufu Machine', unit: 'wrap(s)', price: 5.00 },
+                { name: 'Kokonte Machine', unit: 'bowl(s)', price: 3.00 }, { name: 'Pepper Machine - White', unit: 'bowl(s)', price: 2.00 },
+                { name: 'Pepper Machine - Dry', unit: 'bowl(s)', price: 2.00 }, { name: 'Bread Rolling Machine', unit: 'piece(s)', price: 1.00 },
+                { name: 'Cassava Milling', unit: 'bowl(s)', price: 3.00 }
+            ];
+            localStorage.setItem('milling_machines', JSON.stringify(d));
+            return d;
+        }
+
+        function getDefaultUsers() {
+            var d = [{ name: 'Administrator', password: '1234' }, { name: 'Owner', password: '1234' }];
+            localStorage.setItem('milling_users', JSON.stringify(d));
+            return d;
+        }
+
+        function saveAll() {
+            localStorage.setItem('milling_machines', JSON.stringify(machines));
+            localStorage.setItem('milling_workers', JSON.stringify(workers));
+            localStorage.setItem('milling_users', JSON.stringify(users));
+        }
+
+        function switchTab(n) {
+            document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+            document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+            event.target.classList.add('active'); document.getElementById('panel-' + n).classList.add('active');
+        }
+
+        // MACHINES
+        function addMachine() {
+            var n = document.getElementById('machineName').value.trim(), u = document.getElementById('machineUnit').value, p = parseFloat(document.getElementById('machinePrice').value) || 0;
+            if (!n) { showToast('Enter machine name!', 'error'); return; }
+            machines.push({ name: n, unit: u, price: p }); saveAll(); loadMachinesTable();
+            document.getElementById('machineName').value = ''; document.getElementById('machinePrice').value = '';
+            showToast('Machine added! ✅');
+        }
+        function deleteMachine(i) { if (confirm('Delete?')) { machines.splice(i, 1); saveAll(); loadMachinesTable(); showToast('Deleted.'); } }
+        function loadMachinesTable() {
+            var t = document.getElementById('machinesTable'), h = '';
+            machines.forEach(function(m, i){ h += '<tr><td><strong>' + m.name + '</strong></td><td>' + m.unit + '</td><td>GHS ' + m.price.toFixed(2) + '</td><td><button class="btn btn-danger" onclick="deleteMachine(' + i + ')">🗑</button></td></tr>'; });
+            t.innerHTML = h || '<tr><td colspan="4" style="text-align:center;color:#999;">No machines added</td></tr>';
+        }
+
+        // WORKERS
+        function addWorker() {
+            var n = document.getElementById('workerName').value.trim(), r = parseFloat(document.getElementById('workerRate').value) || 0;
+            if (!n) { showToast('Enter worker name!', 'error'); return; }
+            workers.push({ name: n, dailyRate: r }); saveAll(); loadWorkersTable();
+            document.getElementById('workerName').value = ''; document.getElementById('workerRate').value = '';
+            showToast('Worker added! ✅');
+        }
+        function deleteWorker(i) { if (confirm('Delete?')) { workers.splice(i, 1); saveAll(); loadWorkersTable(); showToast('Deleted.'); } }
+        function loadWorkersTable() {
+            var t = document.getElementById('workersTable'), h = '';
+            workers.forEach(function(w, i){ h += '<tr><td>' + (i+1) + '</td><td>' + w.name + '</td><td>GHS ' + (w.dailyRate||0).toFixed(2) + '</td><td><button class="btn btn-danger" onclick="deleteWorker(' + i + ')">🗑</button></td></tr>'; });
+            t.innerHTML = h || '<tr><td colspan="4" style="text-align:center;color:#999;">No workers</td></tr>';
+        }
+
+        // USERS
+        function addUser() {
+            var n = document.getElementById('newUserName').value.trim(), p = document.getElementById('newUserPass').value || '1234';
+            if (!n) { showToast('Enter name!', 'error'); return; }
+            users.push({ name: n, password: p }); saveAll(); loadUsersTable();
+            document.getElementById('newUserName').value = ''; showToast('User added! ✅');
+        }
+        function deleteUser(i) { if (confirm('Delete?')) { users.splice(i, 1); saveAll(); loadUsersTable(); showToast('Deleted.'); } }
+        function loadUsersTable() {
+            var t = document.getElementById('usersTable'), h = '';
+            users.forEach(function(u, i){ h += '<tr><td>' + (i+1) + '</td><td>' + u.name + '</td><td>' + u.password + '</td><td><button class="btn btn-danger" onclick="deleteUser(' + i + ')">🗑</button></td></tr>'; });
+            t.innerHTML = h || '<tr><td colspan="4" style="text-align:center;color:#999;">No users</td></tr>';
+        }
+
+        // BACKUP
+        function backupAll() {
+            var d = { machines, workers, users, sales: JSON.parse(localStorage.getItem('sales_data'))||[], transactions: JSON.parse(localStorage.getItem('milling_transactions'))||[], attendance: JSON.parse(localStorage.getItem('milling_attendance'))||[], expenses: JSON.parse(localStorage.getItem('milling_expenses'))||[], purchases: JSON.parse(localStorage.getItem('milling_purchases'))||[], payments: JSON.parse(localStorage.getItem('milling_worker_payments'))||[], breadCustomers: JSON.parse(localStorage.getItem('milling_bread_customers'))||[], breadBags: JSON.parse(localStorage.getItem('milling_bread_bags'))||[] };
+            var b = new Blob([JSON.stringify(d,null,2)],{type:'application/json'}), u = URL.createObjectURL(b), a = document.createElement('a');
+            a.href = u; a.download = 'backup_' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast('✅ Backup downloaded!');
+        }
+        function restoreAll(e) {
+            var f = e.target.files[0]; if (!f) return;
+            if (!confirm('⚠️ Overwrite all data?')) { e.target.value=''; return; }
+            var r = new FileReader(); r.onload = function(ev) {
+                try {
+                    var d = JSON.parse(ev.target.result);
+                    if (d.machines) localStorage.setItem('milling_machines', JSON.stringify(d.machines));
+                    if (d.workers) localStorage.setItem('milling_workers', JSON.stringify(d.workers));
+                    if (d.users) localStorage.setItem('milling_users', JSON.stringify(d.users));
+                    if (d.sales) localStorage.setItem('sales_data', JSON.stringify(d.sales));
+                    if (d.transactions) localStorage.setItem('milling_transactions', JSON.stringify(d.transactions));
+                    if (d.attendance) localStorage.setItem('milling_attendance', JSON.stringify(d.attendance));
+                    if (d.expenses) localStorage.setItem('milling_expenses', JSON.stringify(d.expenses));
+                    if (d.purchases) localStorage.setItem('milling_purchases', JSON.stringify(d.purchases));
+                    if (d.payments) localStorage.setItem('milling_worker_payments', JSON.stringify(d.payments));
+                    if (d.breadCustomers) localStorage.setItem('milling_bread_customers', JSON.stringify(d.breadCustomers));
+                    if (d.breadBags) localStorage.setItem('milling_bread_bags', JSON.stringify(d.breadBags));
+                    alert('✅ Restored! Reloading...'); location.reload();
+                } catch(err) { alert('❌ Invalid file!'); }
+            }; r.readAsText(f); e.target.value = '';
+        }
+
+        function showToast(msg, type) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; t.style.background = type === 'error' ? '#ef4444' : '#0f172a'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
+    </script>
+</body>
+</html>

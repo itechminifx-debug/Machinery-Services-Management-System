@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Manager Pro | Login</title>
+    <style>
+        :root {
+            --bg: #0f1923;
+            --card: #1a2736;
+            --accent: #00c9a7;
+            --accent-hover: #00b894;
+            --text: #e0e0e0;
+            --text-light: #8899aa;
+            --input-bg: #243447;
+            --border: #2d4a5e;
+            --danger: #e74c3c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        
+        body {
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-wrapper {
+            display: flex;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+        }
+        
+        /* Left Panel */
+        .login-left {
+            background: linear-gradient(135deg, #00c9a7 0%, #009d82 100%);
+            flex: 1;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: white;
+        }
+        .login-left .brand-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+        .login-left h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .login-left p {
+            font-size: 15px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        .login-left .features {
+            margin-top: 30px;
+            list-style: none;
+        }
+        .login-left .features li {
+            padding: 8px 0;
+            font-size: 14px;
+        }
+        .login-left .features li::before {
+            content: '✓ ';
+            font-weight: bold;
+        }
+        
+        /* Right Panel */
+        .login-right {
+            background: var(--card);
+            flex: 1;
+            padding: 50px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-right h2 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .login-right .subtitle {
+            color: var(--text-light);
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            color: #aabbcc;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--input-bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0,201,167,0.1);
+        }
+        .form-group input::placeholder {
+            color: #5a7a8a;
+        }
+        
+        .error-msg {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: #0f1923;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-login:hover {
+            background: var(--accent-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,201,167,0.3);
+        }
+        
+        .footer-text {
+            text-align: center;
+            color: #5a7a8a;
+            font-size: 11px;
+            margin-top: 30px;
+        }
+        .footer-text a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 700px) {
+            .login-wrapper {
+                flex-direction: column;
+                max-width: 400px;
+            }
+            .login-left {
+                padding: 30px 25px;
+                text-align: center;
+            }
+            .login-right {
+                padding: 30px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <!-- Left Brand Panel -->
+        <div class="login-left">
+            <div class="brand-icon">💰</div>
+            <h1>Sales Manager Pro</h1>
+            <p>The smart way to manage your sales, track customers, and grow your business.</p>
+            <ul class="features">
+                <li>Real-time sales tracking</li>
+                <li>Customer management</li>
+                <li>Profit analytics</li>
+                <li>Export reports</li>
+            </ul>
+        </div>
+        
+        <!-- Right Login Form -->
+        <div class="login-right">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to your account</p>
+            
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="Enter your username">
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+                <div class="error-msg" id="errorMsg">Invalid username or password</div>
+            </div>
+            
+            <button class="btn-login" onclick="login()">🚀 Sign In</button>
+            
+            <p class="footer-text">
+                © 2025 iTech Systems Solutions | <a href="#">Admin</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Default credentials
+        var DEFAULT_USER = 'admin';
+        var DEFAULT_PASS = '1234';
+
+        function login() {
+            var user = document.getElementById('username').value.trim();
+            var pass = document.getElementById('password').value.trim();
+            var errorMsg = document.getElementById('errorMsg');
+            
+            if (!user) {
+                errorMsg.textContent = 'Please enter your username';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            if (!pass) {
+                errorMsg.textContent = 'Please enter your password';
+                errorMsg.style.display = 'block';
+                return;
+            }
+            
+            if (user === DEFAULT_USER && pass === DEFAULT_PASS) {
+                errorMsg.style.display = 'none';
+                localStorage.setItem('salesUser', user);
+                window.location.href = 'dashboard.html';
+            } else {
+                errorMsg.textContent = 'Invalid username or password';
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Allow Enter key to login
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') login();
+        });
+    </script>
+</body>
+</html>

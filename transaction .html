@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Transaction | Sales Manager Pro</title>
+    <style>
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --primary-light: #6366f1; --success: #10b981; --danger: #ef4444; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --input-bg: #f8fafc; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 650px; margin: 0 auto; }
+        .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar h1 { font-size: 22px; color: var(--text); }
+        .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
+        
+        .card { background: var(--card); border-radius: 16px; padding: 28px; box-shadow: var(--shadow); }
+        .card h2 { color: var(--text); font-size: 18px; margin-bottom: 22px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+        .form-group select, .form-group input { width: 100%; padding: 13px 14px; background: var(--input-bg); border: 2px solid var(--border); border-radius: 10px; font-size: 14px; color: var(--text); }
+        .form-group select:focus, .form-group input:focus { outline: none; border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        
+        .price-display { background: #f0fdf4; padding: 14px; border-radius: 10px; margin: 15px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .price-display .default-price { font-size: 14px; color: var(--text-light); }
+        .price-display .default-price strong { color: var(--success); font-size: 18px; }
+        .price-display .override-group { display: flex; align-items: center; gap: 6px; }
+        .price-display .override-group input { width: 90px; padding: 8px; border: 2px solid #f59e0b; border-radius: 8px; text-align: center; font-size: 14px; }
+        
+        .total-box { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 16px 20px; border-radius: 12px; text-align: center; margin: 15px 0; }
+        .total-box .amount { font-size: 34px; font-weight: 700; }
+        .total-box .label { font-size: 11px; opacity: 0.85; text-transform: uppercase; }
+        
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { flex: 1; padding: 14px 18px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; color: white; text-align: center; text-decoration: none; transition: all 0.2s; }
+        .btn-primary { background: var(--primary); } .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); }
+        .btn-success { background: var(--success); } .btn-outline { background: white; color: var(--text); border: 2px solid var(--border); }
+        
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; font-weight: 600; z-index: 1000; display: none; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        
+        @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar"><h1>📝 New Transaction</h1><a href="dashboard.html">🔙 Dashboard</a></div>
+        
+        <div class="card">
+            <h2>🏭 Record Milling Service</h2>
+            
+            <div class="form-group">
+                <label>Select Machine *</label>
+                <select id="machineSelect" onchange="updatePrice()">
+                    <option value="">-- Select Machine --</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" value="1" min="1" oninput="calculateTotal()">
+                </div>
+                <div class="form-group">
+                    <label>Unit</label>
+                    <input type="text" id="unitDisplay" readonly style="background:#e2e8f0;color:#64748b;">
+                </div>
+            </div>
+            
+            <div class="price-display">
+                <div class="default-price">Default: <strong id="defaultPriceDisplay">GHS 0.00</strong> / unit</div>
+                <div class="override-group">
+                    <label style="font-size:11px;color:var(--text-light);">Override:</label>
+                    <input type="number" id="priceOverride" placeholder="GHS" step="0.01" oninput="calculateTotal()">
+                </div>
+            </div>
+            
+            <div class="total-box">
+                <div class="label">Total Amount</div>
+                <div class="amount" id="totalDisplay">GHS 0.00</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Payment Status</label>
+                <select id="paymentStatus">
+                    <option value="Paid">✅ Paid</option>
+                    <option value="Pending">⏳ Pending</option>
+                </select>
+            </div>
+            
+            <div class="btn-row">
+                <a href="dashboard.html" class="btn btn-outline">← Cancel</a>
+                <button class="btn btn-success" onclick="saveAndNew()">💾 Save & New</button>
+                <button class="btn btn-primary" onclick="saveTransaction()">💾 Save & Close</button>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var machines = [];
+        
+        window.onload = function() { loadMachines(); };
+        
+        function loadMachines() {
+            machines = JSON.parse(localStorage.getItem('milling_machines')) || [];
+            if (machines.length === 0) {
+                machines = [
+                    { name: 'Corn Mill - Dry', unit: 'bowl(s)', price: 2.00 }, { name: 'Corn Mill - Wet', unit: 'bowl(s)', price: 3.00 },
+                    { name: 'Palm Nut Peeler', unit: 'bucket(s)', price: 5.00 }, { name: 'Palm Nut Masher', unit: 'bucket(s)', price: 5.00 },
+                    { name: 'Granite Machine', unit: 'load(s)', price: 10.00 }, { name: 'Fufu Machine', unit: 'wrap(s)', price: 5.00 },
+                    { name: 'Kokonte Machine', unit: 'bowl(s)', price: 3.00 }, { name: 'Pepper Machine - White', unit: 'bowl(s)', price: 2.00 },
+                    { name: 'Pepper Machine - Dry', unit: 'bowl(s)', price: 2.00 }, { name: 'Bread Rolling Machine', unit: 'piece(s)', price: 1.00 },
+                    { name: 'Cassava Milling', unit: 'bowl(s)', price: 3.00 }
+                ];
+                localStorage.setItem('milling_machines', JSON.stringify(machines));
+            }
+            var sel = document.getElementById('machineSelect');
+            machines.forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m.name; opt.textContent = m.name + ' (GHS ' + m.price.toFixed(2) + '/' + m.unit + ')';
+                opt.dataset.price = m.price; opt.dataset.unit = m.unit; sel.appendChild(opt);
+            });
+        }
+        
+        function updatePrice() {
+            var opt = document.getElementById('machineSelect').selectedOptions[0];
+            if (opt && opt.dataset.price) {
+                document.getElementById('defaultPriceDisplay').textContent = 'GHS ' + parseFloat(opt.dataset.price).toFixed(2);
+                document.getElementById('unitDisplay').value = opt.dataset.unit;
+                calculateTotal();
+            }
+        }
+        
+        function calculateTotal() {
+            var opt = document.getElementById('machineSelect').selectedOptions[0];
+            var dp = opt ? parseFloat(opt.dataset.price) || 0 : 0;
+            var qty = parseInt(document.getElementById('quantity').value) || 1;
+            var ov = document.getElementById('priceOverride').value;
+            var up = ov ? parseFloat(ov) : dp;
+            document.getElementById('totalDisplay').textContent = 'GHS ' + (up * qty).toFixed(2);
+        }
+        
+        function getTxn() {
+            var opt = document.getElementById('machineSelect').selectedOptions[0];
+            var dp = opt ? parseFloat(opt.dataset.price) || 0 : 0;
+            var qty = parseInt(document.getElementById('quantity').value) || 1;
+            var ov = document.getElementById('priceOverride').value;
+            var up = ov ? parseFloat(ov) : dp;
+            return {
+                id: Date.now(), date: new Date().toLocaleDateString(), time: new Date().toLocaleTimeString(),
+                machine: opt ? opt.value : '', unit: opt ? opt.dataset.unit : '',
+                quantity: qty, defaultPrice: dp, unitPrice: up, total: up * qty,
+                status: document.getElementById('paymentStatus').value
+            };
+        }
+        
+        function saveTransaction() {
+            var txn = getTxn();
+            if (!txn.machine) { alert('Please select a machine!'); return; }
+            var txns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            txns.push(txn);
+            localStorage.setItem('milling_transactions', JSON.stringify(txns));
+            showToast('✅ Saved! GHS ' + txn.total.toFixed(2));
+            setTimeout(function() { window.location.href = 'dashboard.html'; }, 800);
+        }
+        
+        function saveAndNew() {
+            var txn = getTxn();
+            if (!txn.machine) { alert('Please select a machine!'); return; }
+            var txns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            txns.push(txn);
+            localStorage.setItem('milling_transactions', JSON.stringify(txns));
+            document.getElementById('quantity').value = '1';
+            document.getElementById('priceOverride').value = '';
+            document.getElementById('totalDisplay').textContent = 'GHS 0.00';
+            showToast('✅ Saved! Enter next.');
+        }
+        
+        function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Payment | Sales Manager Pro</title>
+    <style>
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --info: #3b82f6; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar h1 { font-size: 22px; color: var(--text); }
+        .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
+        
+        .card { background: var(--card); border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow); }
+        .card h3 { color: var(--text); font-size: 17px; margin-bottom: 16px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: 600; color: var(--text); margin-bottom: 5px; font-size: 11px; text-transform: uppercase; }
+        .form-group input, .form-group select { width: 100%; padding: 11px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--card); }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        
+        .summary-card { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 16px 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
+        .summary-card .amount { font-size: 28px; font-weight: 700; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
+        table th { background: var(--primary); color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
+        table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; }
+        .badge-paid { background: #d1fae5; color: #065f46; } .badge-unpaid { background: #fef3c7; color: #92400e; }
+        
+        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; }
+        .btn-info { background: var(--info); } .btn-success { background: var(--success); }
+        
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; z-index: 1000; display: none; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        
+        @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar"><h1>💵 Worker Payment (Monthly)</h1><a href="dashboard.html">🔙 Dashboard</a></div>
+        
+        <div class="card">
+            <h3>📅 Select Pay Period</h3>
+            <div class="form-row">
+                <div class="form-group"><label>Month</label><select id="payMonth" onchange="loadSummary()"><option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option><option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option><option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option></select></div>
+                <div class="form-group"><label>Year</label><input type="number" id="payYear" value="2025" onchange="loadSummary()"></div>
+                <button class="btn btn-info" onclick="loadSummary()" style="height:42px;">📊 Load</button>
+            </div>
+        </div>
+        
+        <div class="summary-card"><div style="font-size:11px;opacity:0.85;">TOTAL PAYOUT</div><div class="amount" id="totalPayout">GHS 0.00</div><div style="font-size:12px;margin-top:4px;" id="paymentStatus">0 paid / 0 unpaid</div></div>
+        
+        <div class="card">
+            <h3>👷 Worker Payment Details</h3>
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>Worker</th><th>Daily Rate</th><th>Days Worked</th><th>Total Pay</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="paymentTable"><tr><td colspan="6" style="text-align:center;color:#999;">Select month and click Load</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>📋 Payment History</h3>
+            <table><thead><tr><th>Date Paid</th><th>Worker</th><th>Month</th><th>Days</th><th>Amount</th></tr></thead>
+                <tbody id="historyTable"><tr><td colspan="5" style="text-align:center;color:#999;">No payments</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        var selectedMonth = new Date().getMonth(), selectedYear = new Date().getFullYear();
+        window.onload = function() { document.getElementById('payMonth').value = selectedMonth; document.getElementById('payYear').value = selectedYear; loadSummary(); };
+
+        function loadSummary() {
+            selectedMonth = parseInt(document.getElementById('payMonth').value); selectedYear = parseInt(document.getElementById('payYear').value);
+            var workers = JSON.parse(localStorage.getItem('milling_workers')) || [];
+            var attendance = JSON.parse(localStorage.getItem('milling_attendance')) || [];
+            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            var dim = new Date(selectedYear, selectedMonth + 1, 0).getDate(), totalPayout = 0, paidCount = 0, unpaidCount = 0;
+            var tbody = document.getElementById('paymentTable'), html = '';
+            
+            workers.forEach(function(w) {
+                var daysWorked = 0;
+                for (var d = 1; d <= dim; d++) { var ds = new Date(selectedYear, selectedMonth, d).toLocaleDateString(); if (attendance.find(function(a){ return (a.Date||a.date) === ds && (a.WorkerName||a.workerName) === w.name && (a.Present==='true'||a.Present===true||a.present===true); })) daysWorked++; }
+                var totalPay = daysWorked * (w.dailyRate || 0), ml = getMonthName(selectedMonth) + ' ' + selectedYear;
+                var paidRec = payments.find(function(p){ return (p.WorkerName||p.workerName) === w.name && (p.Month||p.month) === ml; });
+                var isPaid = !!paidRec;
+                if (isPaid) { paidCount++; totalPayout += parseFloat(paidRec.Amount||paidRec.amount||0); } else { unpaidCount++; totalPayout += totalPay; }
+                html += '<tr><td><strong>' + w.name + '</strong></td><td>GHS ' + (w.dailyRate||0).toFixed(2) + '</td><td>' + daysWorked + ' days</td><td><strong>GHS ' + totalPay.toFixed(2) + '</strong></td><td><span class="badge ' + (isPaid?'badge-paid':'badge-unpaid') + '">' + (isPaid?'Paid':'Unpaid') + '</span></td><td>' + (isPaid ? '<span style="color:#999;">Paid ' + (paidRec.PaidDate||paidRec.paidDate||'') + '</span>' : '<button class="btn btn-success" onclick="payWorker(\'' + w.name.replace(/'/g,"\\'") + '\', ' + daysWorked + ', ' + totalPay + ')" style="padding:5px 10px;font-size:11px;">💵 Pay</button>') + '</td></tr>';
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;">No workers</td></tr>';
+            document.getElementById('totalPayout').textContent = 'GHS ' + totalPayout.toLocaleString();
+            document.getElementById('paymentStatus').textContent = paidCount + ' paid / ' + unpaidCount + ' unpaid';
+            loadHistory();
+        }
+
+        function payWorker(name, days, amount) {
+            if (!confirm('Pay GHS ' + amount.toFixed(2) + ' to ' + name + '?')) return;
+            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            payments = payments.filter(function(p){ return !((p.WorkerName||p.workerName) === name && (p.Month||p.month) === getMonthName(selectedMonth) + ' ' + selectedYear); });
+            payments.push({ WorkerName: name, workerName: name, Month: getMonthName(selectedMonth) + ' ' + selectedYear, month: getMonthName(selectedMonth) + ' ' + selectedYear, DaysWorked: days, daysWorked: days, Amount: amount, amount: amount, PaidDate: new Date().toLocaleDateString(), paidDate: new Date().toLocaleDateString() });
+            localStorage.setItem('milling_worker_payments', JSON.stringify(payments));
+            loadSummary(); showToast('✅ Paid GHS ' + amount.toFixed(2) + ' to ' + name);
+        }
+
+        function loadHistory() {
+            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            payments.sort(function(a,b){ return new Date(b.PaidDate||b.paidDate) - new Date(a.PaidDate||a.paidDate); });
+            var tbody = document.getElementById('historyTable'), html = '';
+            payments.slice(0,15).forEach(function(p){ html += '<tr><td>' + (p.PaidDate||p.paidDate||'') + '</td><td>' + (p.WorkerName||p.workerName||'') + '</td><td>' + (p.Month||p.month||'') + '</td><td>' + (p.DaysWorked||p.daysWorked||'') + ' days</td><td><strong>GHS ' + parseFloat(p.Amount||p.amount||0).toFixed(2) + '</strong></td></tr>'; });
+            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">No payments</td></tr>';
+        }
+
+        function getMonthName(i) { return ['January','February','March','April','May','June','July','August','September','October','November','December'][i]; }
+        function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
+    </script>
+</body>
+</html>

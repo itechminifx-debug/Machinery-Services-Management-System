@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Sales Manager Pro</title>
+    <style>
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; }
+        .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .topbar h1 { font-size: 22px; color: var(--text); } .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
+        .card { background: var(--card); border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow); }
+        .card h3 { color: var(--text); font-size: 17px; margin-bottom: 16px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .option-card { padding: 20px; border-radius: 12px; text-align: center; }
+        .option-card .icon { font-size: 40px; margin-bottom: 8px; }
+        .option-card h4 { margin-bottom: 8px; color: var(--text); }
+        .option-card p { font-size: 12px; color: var(--text-light); margin-bottom: 12px; }
+        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; width: 100%; transition: all 0.2s; }
+        .btn-success { background: var(--success); } .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); } .btn-warning { background: var(--warning); color: #1e293b; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; z-index: 1000; display: none; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        @media (max-width: 500px) { .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar"><h1>⚙️ Settings</h1><a href="dashboard.html">🔙 Dashboard</a></div>
+
+        <!-- Backup & Restore -->
+        <div class="card">
+            <h3>💾 Data Backup & Restore</h3>
+            <div class="grid-2">
+                <div class="option-card" style="background:#e8f5e9;">
+                    <div class="icon">📥</div><h4>Download Backup</h4><p>Save all data as a file</p>
+                    <button class="btn btn-success" onclick="backupAll()">📥 Backup</button>
+                </div>
+                <div class="option-card" style="background:#fff3e0;">
+                    <div class="icon">📤</div><h4>Restore Backup</h4><p>Restore from a backup file</p>
+                    <input type="file" id="restoreFile" accept=".json" style="display:none;" onchange="restoreAll(event)">
+                    <button class="btn btn-primary" onclick="document.getElementById('restoreFile').click()">📤 Restore</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clear Data -->
+        <div class="card">
+            <h3>🗑 Clear Data</h3>
+            <div class="grid-2">
+                <div class="option-card" style="background:#fef2f2;">
+                    <div class="icon">🗑</div><h4>Clear Today's Data</h4><p>Delete all transactions & records for today</p>
+                    <button class="btn btn-warning" onclick="clearToday()">🗑 Clear Today</button>
+                </div>
+                <div class="option-card" style="background:#fef2f2;">
+                    <div class="icon">⚠️</div><h4>Clear ALL Data</h4><p>Delete everything — full system reset</p>
+                    <button class="btn btn-danger" onclick="clearAll()">⚠️ Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="card">
+            <h3>📊 System Info</h3>
+            <table style="width:100%;font-size:13px;">
+                <tr><td style="padding:8px;color:var(--text-light);">Total Transactions</td><td style="padding:8px;text-align:right;font-weight:600;" id="infoTxns">0</td></tr>
+                <tr><td style="padding:8px;color:var(--text-light);">Total Machines</td><td style="padding:8px;text-align:right;font-weight:600;" id="infoMachines">0</td></tr>
+                <tr><td style="padding:8px;color:var(--text-light);">Total Workers</td><td style="padding:8px;text-align:right;font-weight:600;" id="infoWorkers">0</td></tr>
+                <tr><td style="padding:8px;color:var(--text-light);">Total Users</td><td style="padding:8px;text-align:right;font-weight:600;" id="infoUsers">0</td></tr>
+                <tr><td style="padding:8px;color:var(--text-light);">Bread Customers</td><td style="padding:8px;text-align:right;font-weight:600;" id="infoCustomers">0</td></tr>
+                <tr><td style="padding:8px;color:var(--text-light);">Active Bread Bags</td><td style="padding:8px;text-align:right;font-weight:600;" id="infoBags">0</td></tr>
+            </table>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        window.onload = function() { loadInfo(); };
+
+        function loadInfo() {
+            var txns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            var machines = JSON.parse(localStorage.getItem('milling_machines')) || [];
+            var workers = JSON.parse(localStorage.getItem('milling_workers')) || [];
+            var users = JSON.parse(localStorage.getItem('milling_users')) || [];
+            var customers = JSON.parse(localStorage.getItem('milling_bread_customers')) || [];
+            var bags = JSON.parse(localStorage.getItem('milling_bread_bags')) || [];
+            document.getElementById('infoTxns').textContent = txns.length;
+            document.getElementById('infoMachines').textContent = machines.length;
+            document.getElementById('infoWorkers').textContent = workers.length;
+            document.getElementById('infoUsers').textContent = users.length;
+            document.getElementById('infoCustomers').textContent = customers.length;
+            document.getElementById('infoBags').textContent = bags.filter(function(b){ return b.status === 'Active'; }).length;
+        }
+
+        function backupAll() {
+            var d = {
+                machines: JSON.parse(localStorage.getItem('milling_machines'))||[],
+                workers: JSON.parse(localStorage.getItem('milling_workers'))||[],
+                users: JSON.parse(localStorage.getItem('milling_users'))||[],
+                transactions: JSON.parse(localStorage.getItem('milling_transactions'))||[],
+                attendance: JSON.parse(localStorage.getItem('milling_attendance'))||[],
+                expenses: JSON.parse(localStorage.getItem('milling_expenses'))||[],
+                purchases: JSON.parse(localStorage.getItem('milling_purchases'))||[],
+                payments: JSON.parse(localStorage.getItem('milling_worker_payments'))||[],
+                breadCustomers: JSON.parse(localStorage.getItem('milling_bread_customers'))||[],
+                breadBags: JSON.parse(localStorage.getItem('milling_bread_bags'))||[]
+            };
+            var b = new Blob([JSON.stringify(d,null,2)],{type:'application/json'}), u = URL.createObjectURL(b), a = document.createElement('a');
+            a.href = u; a.download = 'full_backup_' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            showToast('✅ Backup downloaded!');
+        }
+
+        function restoreAll(e) {
+            var f = e.target.files[0]; if (!f) return;
+            if (!confirm('⚠️ This will OVERWRITE all current data. Continue?')) { e.target.value=''; return; }
+            var r = new FileReader(); r.onload = function(ev) {
+                try {
+                    var d = JSON.parse(ev.target.result);
+                    if (d.machines) localStorage.setItem('milling_machines', JSON.stringify(d.machines));
+                    if (d.workers) localStorage.setItem('milling_workers', JSON.stringify(d.workers));
+                    if (d.users) localStorage.setItem('milling_users', JSON.stringify(d.users));
+                    if (d.transactions) localStorage.setItem('milling_transactions', JSON.stringify(d.transactions));
+                    if (d.attendance) localStorage.setItem('milling_attendance', JSON.stringify(d.attendance));
+                    if (d.expenses) localStorage.setItem('milling_expenses', JSON.stringify(d.expenses));
+                    if (d.purchases) localStorage.setItem('milling_purchases', JSON.stringify(d.purchases));
+                    if (d.payments) localStorage.setItem('milling_worker_payments', JSON.stringify(d.payments));
+                    if (d.breadCustomers) localStorage.setItem('milling_bread_customers', JSON.stringify(d.breadCustomers));
+                    if (d.breadBags) localStorage.setItem('milling_bread_bags', JSON.stringify(d.breadBags));
+                    alert('✅ Data restored! Reloading...'); location.reload();
+                } catch(err) { alert('❌ Invalid file!'); }
+            }; r.readAsText(f); e.target.value = '';
+        }
+
+        function clearToday() {
+            var today = new Date().toLocaleDateString();
+            if (!confirm('⚠️ Delete ALL data for ' + today + '?')) return;
+            if (!confirm('FINAL CONFIRMATION: This cannot be undone!')) return;
+            ['milling_transactions','milling_attendance','milling_expenses','milling_purchases'].forEach(function(key){
+                var data = JSON.parse(localStorage.getItem(key)) || [];
+                data = data.filter(function(d){ return (d.Date||d.date||d.PaidDate||d.paidDate) !== today; });
+                localStorage.setItem(key, JSON.stringify(data));
+            });
+            loadInfo(); showToast('✅ Today\'s data cleared!');
+        }
+
+        function clearAll() {
+            if (!confirm('⚠️⚠️ DELETE EVERYTHING? This will reset the ENTIRE system!')) return;
+            if (!confirm('FINAL WARNING: All data will be permanently deleted!')) return;
+            if (!confirm('Type "DELETE" to confirm:') && prompt('Type DELETE to confirm:') !== 'DELETE') { alert('Cancelled.'); return; }
+            localStorage.clear();
+            alert('✅ All data cleared. System reset!'); location.reload();
+        }
+
+        function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
+    </script>
+</body>
+</html>

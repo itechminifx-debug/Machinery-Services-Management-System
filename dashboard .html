@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Sales Manager Pro</title>
+    <style>
+        :root {
+            --primary: #4f46e5; --primary-light: #6366f1; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6; --purple: #8b5cf6;
+            --orange: #f97316; --teal: #14b8a6; --bg: #f0f2f5; --card: #ffffff;
+            --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; }
+
+        .navbar {
+            background: #1e293b; color: white; padding: 14px 24px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+        .navbar .brand { font-size: 20px; font-weight: 700; }
+        .navbar .brand span { color: #818cf8; }
+        .navbar .user-info { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        .navbar .btn-logout { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        .date-selector {
+            background: var(--card); border-radius: 14px; padding: 16px 20px;
+            margin-bottom: 20px; box-shadow: var(--shadow);
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+        }
+        .date-selector input[type="date"] { padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; }
+        .date-selector .btn-nav { padding: 10px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; font-size: 13px; }
+        .date-selector .btn-prev { background: var(--primary); }
+        .date-selector .btn-today { background: var(--success); }
+        .date-selector .btn-next { background: var(--primary); }
+        .date-selector .selected-date { font-size: 15px; font-weight: 700; color: var(--text); min-width: 200px; text-align: center; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card {
+            background: var(--card); border-radius: 14px; padding: 16px 18px;
+            box-shadow: var(--shadow); border-left: 4px solid var(--primary); text-align: center;
+        }
+        .stat-card .value { font-size: 26px; font-weight: 700; color: var(--text); }
+        .stat-card .label { font-size: 10px; color: var(--text-light); text-transform: uppercase; margin-top: 3px; }
+        .stat-card.rev { border-left-color: var(--primary); }
+        .stat-card.txn { border-left-color: var(--success); }
+        .stat-card.wrk { border-left-color: var(--warning); }
+        .stat-card.exp { border-left-color: var(--danger); }
+        .stat-card.pen { border-left-color: var(--orange); }
+        .stat-card.cust { border-left-color: var(--info); }
+
+        .card { background: var(--card); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .card h3 { color: var(--text); font-size: 16px; margin-bottom: 14px; }
+
+        .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn {
+            padding: 10px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600;
+            cursor: pointer; text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 5px;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .btn-sale { background: var(--primary); }
+        .btn-bread { background: var(--orange); }
+        .btn-att { background: var(--success); }
+        .btn-pay { background: var(--info); }
+        .btn-exp { background: var(--danger); }
+        .btn-pur { background: var(--purple); }
+        .btn-rep { background: var(--teal); }
+        .btn-own { background: #1e293b; }
+        .btn-set { background: #64748b; }
+        .btn-del { background: #dc2626; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        table th { background: #f8fafc; color: var(--text-light); padding: 8px 6px; text-align: left; font-size: 10px; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+        table td { padding: 7px 6px; border-bottom: 1px solid var(--border); color: var(--text); }
+        table tr:hover td { background: #f8fafc; }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+        .badge-paid { background: #d1fae5; color: #065f46; }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+
+        @media (max-width: 600px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .quick-actions .btn { flex: 1; min-width: 100px; justify-content: center; }
+            .date-selector { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="brand">🏭 Sales<span>Pro</span> Management</div>
+        <div class="user-info">
+            <span>👤 <span id="userDisplay">Admin</span></span>
+            <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- Date Selector -->
+        <div class="date-selector">
+            <button class="btn-nav btn-prev" onclick="changeDate(-1)">◀ Previous</button>
+            <input type="date" id="datePicker" onchange="onDatePicked()">
+            <button class="btn-nav btn-today" onclick="goToToday()">📅 Today</button>
+            <button class="btn-nav btn-next" onclick="changeDate(1)">Next ▶</button>
+            <div class="selected-date" id="selectedDateDisplay"></div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card rev"><div class="value" id="dayRevenue">GHS 0</div><div class="label">Revenue</div></div>
+            <div class="stat-card txn"><div class="value" id="dayTransactions">0</div><div class="label">Transactions</div></div>
+            <div class="stat-card wrk"><div class="value" id="dayWorkers">0</div><div class="label">Workers Present</div></div>
+            <div class="stat-card exp"><div class="value" id="dayExpenses">GHS 0</div><div class="label">Expenses</div></div>
+            <div class="stat-card pen"><div class="value" id="dayPending">GHS 0</div><div class="label">Pending</div></div>
+            <div class="stat-card cust"><div class="value" id="dayCustomers">0</div><div class="label">Customers</div></div>
+        </div>
+
+        <!-- Quick Actions - ALL MODULES -->
+        <!-- Quick Actions - ALL MODULES -->
+<div class="card">
+    <h3>⚡ All Modules</h3>
+    <div class="quick-actions">
+        <a href="transaction.html" class="btn btn-sale">📝 New Transaction</a>
+        <a href="bread_flour.html" class="btn btn-bread">🍞 Bread Flour</a>
+        <a href="attendance.html" class="btn btn-att">👷 Attendance</a>
+        <a href="worker_pay.html" class="btn btn-pay">💵 Worker Pay</a>
+        <a href="expenses.html" class="btn btn-exp">💸 Expenses</a>
+        <a href="purchases.html" class="btn btn-pur">📦 Purchases</a>
+        <a href="reports.html" class="btn btn-rep">📊 Reports</a>
+        <a href="owner_view.html" class="btn btn-own">👑 Owner View</a>
+        <a href="settings.html" class="btn btn-set">⚙️ Settings</a>
+        <button class="btn btn-del" onclick="deleteSelectedDateData()">🗑 Clear This Day</button>
+    </div>
+</div>
+        <!-- Transactions Table -->
+        <div class="card">
+            <h3>📋 Transactions for <span id="txnDateLabel">Today</span></h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Time</th><th>Machine/Customer</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+                    <tbody id="dayTransactionsTable">
+                        <tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">No transactions for this date</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var selectedDate = new Date().toLocaleDateString();
+
+        window.onload = function() {
+            document.getElementById('userDisplay').textContent = localStorage.getItem('salesUser') || 'Admin';
+            document.getElementById('datePicker').value = new Date().toISOString().split('T')[0];
+            updateDisplay();
+        };
+
+        function updateDisplay() {
+            var d = new Date(selectedDate);
+            document.getElementById('selectedDateDisplay').textContent = d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('txnDateLabel').textContent = selectedDate;
+            var parts = selectedDate.split('/');
+            document.getElementById('datePicker').value = parts[2] + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+            loadDashboardForDate(selectedDate);
+        }
+
+        function changeDate(days) { var c = new Date(selectedDate); c.setDate(c.getDate() + days); selectedDate = c.toLocaleDateString(); updateDisplay(); }
+        function onDatePicked() { var v = document.getElementById('datePicker').value; if (v) { selectedDate = new Date(v + 'T00:00:00').toLocaleDateString(); updateDisplay(); } }
+        function goToToday() { selectedDate = new Date().toLocaleDateString(); updateDisplay(); }
+
+        function loadDashboardForDate(dateStr) {
+            // Sales transactions
+            var sales = JSON.parse(localStorage.getItem('sales_data')) || [];
+            var daySales = sales.filter(function(s) { return s.date === dateStr; });
+            var rev = daySales.reduce(function(sum, s) { return sum + (s.amount || 0); }, 0);
+            var customers = new Set(daySales.map(function(s) { return s.customer; }));
+            var pending = daySales.filter(function(s) { return s.status === 'Pending'; }).reduce(function(sum, s) { return sum + (s.amount || 0); }, 0);
+
+            // Milling transactions (for Scan Set compatibility)
+            var millingTxns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            var dayMilling = millingTxns.filter(function(t) { return (t.Date || t.date) === dateStr; });
+            var millingRev = dayMilling.reduce(function(sum, t) { return sum + (t.Total || t.total || 0); }, 0);
+            var allDayTxns = daySales.length + dayMilling.length;
+            var totalRev = rev + millingRev;
+
+            document.getElementById('dayRevenue').textContent = 'GHS ' + totalRev.toLocaleString();
+            document.getElementById('dayTransactions').textContent = allDayTxns;
+            document.getElementById('dayCustomers').textContent = customers.size;
+            document.getElementById('dayPending').textContent = 'GHS ' + pending.toLocaleString();
+
+            // Workers present
+            var attendance = JSON.parse(localStorage.getItem('milling_attendance')) || [];
+            var dayAtt = attendance.filter(function(a) { return (a.Date || a.date) === dateStr && (a.Present === 'true' || a.Present === true || a.present === true); });
+            document.getElementById('dayWorkers').textContent = dayAtt.length;
+
+            // Expenses
+            var expenses = JSON.parse(localStorage.getItem('milling_expenses')) || [];
+            var dayExp = expenses.filter(function(e) { return (e.Date || e.date) === dateStr; }).reduce(function(sum, e) { return sum + (parseFloat(e.Amount) || parseFloat(e.amount) || 0); }, 0);
+            document.getElementById('dayExpenses').textContent = 'GHS ' + dayExp.toLocaleString();
+
+            // Transactions table
+            var tbody = document.getElementById('dayTransactionsTable');
+            var html = '';
+            
+            // Show sales
+            daySales.forEach(function(s) {
+                html += '<tr><td>' + (s.time || '') + '</td><td>' + s.customer + '</td><td>' + s.product + '</td><td>' + (s.quantity || 1) + '</td><td><strong>GHS ' + (s.amount || 0).toLocaleString() + '</strong></td><td><span class="badge ' + (s.status === 'Paid' ? 'badge-paid' : 'badge-pending') + '">' + (s.status || 'Paid') + '</span></td></tr>';
+            });
+            
+            // Show milling transactions
+            dayMilling.forEach(function(t) {
+                html += '<tr><td>' + (t.Time || t.time || '') + '</td><td>' + (t.Machine || t.machine || '') + '</td><td>' + (t.Quantity || t.quantity || '') + ' ' + (t.Unit || t.unit || '') + '</td><td>' + (t.Quantity || t.quantity || '') + '</td><td><strong>GHS ' + (parseFloat(t.Total || t.total || 0)).toLocaleString() + '</strong></td><td><span class="badge ' + ((t.Status || t.status) === 'Paid' ? 'badge-paid' : 'badge-pending') + '">' + (t.Status || t.status || 'Paid') + '</span></td></tr>';
+            });
+
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">No transactions for this date</td></tr>';
+        }
+
+        function deleteSelectedDateData() {
+            if (!confirm('⚠️ Delete ALL data for ' + selectedDate + '?\n\nSales, Attendance, Expenses, Purchases\n\nThis CANNOT be undone!')) return;
+            if (!confirm('FINAL CONFIRMATION: Delete?')) return;
+
+            var sales = JSON.parse(localStorage.getItem('sales_data')) || [];
+            sales = sales.filter(function(s) { return s.date !== selectedDate; });
+            localStorage.setItem('sales_data', JSON.stringify(sales));
+
+            var millingTxns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            millingTxns = millingTxns.filter(function(t) { return (t.Date || t.date) !== selectedDate; });
+            localStorage.setItem('milling_transactions', JSON.stringify(millingTxns));
+
+            var attendance = JSON.parse(localStorage.getItem('milling_attendance')) || [];
+            attendance = attendance.filter(function(a) { return (a.Date || a.date) !== selectedDate; });
+            localStorage.setItem('milling_attendance', JSON.stringify(attendance));
+
+            var expenses = JSON.parse(localStorage.getItem('milling_expenses')) || [];
+            expenses = expenses.filter(function(e) { return (e.Date || e.date) !== selectedDate; });
+            localStorage.setItem('milling_expenses', JSON.stringify(expenses));
+
+            var purchases = JSON.parse(localStorage.getItem('milling_purchases')) || [];
+            purchases = purchases.filter(function(p) { return (p.Date || p.date) !== selectedDate; });
+            localStorage.setItem('milling_purchases', JSON.stringify(purchases));
+
+            alert('✅ All data for ' + selectedDate + ' deleted!');
+            updateDisplay();
+        }
+
+        function logout() { localStorage.removeItem('salesUser'); window.location.href = 'index.html'; }
+    </script>
+</body>
+</html>
