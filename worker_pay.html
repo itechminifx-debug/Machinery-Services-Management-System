@@ -26,8 +26,9 @@
         .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; }
         .badge-paid { background: #d1fae5; color: #065f46; } .badge-unpaid { background: #fef3c7; color: #92400e; }
         .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; transition: all 0.2s; }
-        .btn-info { background: var(--info); } .btn-success { background: var(--success); } .btn-primary { background: var(--primary); } .btn-sm { padding: 5px 10px; font-size: 11px; }
+        .btn-info { background: var(--info); } .btn-success { background: var(--success); } .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); } .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .slip-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
         .slip-overlay.show { display: flex; }
         .slip-card { background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; }
@@ -64,18 +65,21 @@
 
         <div class="card">
             <h3>👷 Worker Payment Details</h3>
-            <p style="font-size:11px;color:var(--text-light);margin-bottom:10px;">⚠️ Attendance changes reflect here instantly. Click <strong>Load</strong> to refresh.</p>
+            <p style="font-size:11px;color:var(--text-light);margin-bottom:10px;">⚠️ Click <strong>Load</strong> to refresh attendance. Use <strong>Delete</strong> to remove a payment.</p>
             <div style="overflow-x:auto;">
                 <table><thead><tr><th>Worker</th><th>Daily Rate</th><th>Days Worked</th><th>Absent</th><th>Total Pay</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="paymentTable"><tr><td colspan="7" style="text-align:center;color:#999;">Select month and click Load</td></tr></tbody>
                 </table>
             </div>
+            <div class="btn-row">
+                <button class="btn btn-danger" onclick="clearAllPayments()">🗑 Clear All Payments</button>
+            </div>
         </div>
 
         <div class="card">
             <h3>📋 Payment History</h3>
-            <table><thead><tr><th>Date Paid</th><th>Worker</th><th>Month</th><th>Days</th><th>Amount</th></tr></thead>
-                <tbody id="historyTable"><tr><td colspan="5" style="text-align:center;color:#999;">No payments</td></tr></tbody>
+            <table><thead><tr><th>Date Paid</th><th>Worker</th><th>Month</th><th>Days</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="historyTable"><tr><td colspan="6" style="text-align:center;color:#999;">No payments</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -105,7 +109,6 @@
             selectedMonth = parseInt(document.getElementById('payMonth').value);
             selectedYear = parseInt(document.getElementById('payYear').value);
 
-            // ✅ ALWAYS READ FRESH DATA FROM LOCAL STORAGE
             var workers = JSON.parse(localStorage.getItem('milling_workers')) || [];
             var attendance = JSON.parse(localStorage.getItem('milling_attendance')) || [];
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
@@ -115,10 +118,10 @@
             var tbody = document.getElementById('paymentTable'), html = '';
 
             if (workers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">No workers added. Go to <a href="admin.html">Admin Panel</a> to add workers.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">No workers added.</td></tr>';
                 document.getElementById('totalPayout').textContent = 'GHS 0.00';
                 document.getElementById('paymentStatus').textContent = '0 paid / 0 unpaid';
-                document.getElementById('historyTable').innerHTML = '<tr><td colspan="5" style="text-align:center;color:#999;">No payments</td></tr>';
+                document.getElementById('historyTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">No payments</td></tr>';
                 return;
             }
 
@@ -126,7 +129,6 @@
                 var daysWorked = 0, daysAbsent = 0;
                 var attendanceDetails = [];
 
-                // ✅ Count each day from attendance records
                 for (var d = 1; d <= dim; d++) {
                     var dateStr = new Date(selectedYear, selectedMonth, d).toLocaleDateString();
                     var record = attendance.find(function(a) {
@@ -134,13 +136,8 @@
                     });
                     if (record) {
                         var present = (record.Present === 'true' || record.Present === true || record.present === true);
-                        if (present) {
-                            daysWorked++;
-                            attendanceDetails.push({ date: dateStr, present: true });
-                        } else {
-                            daysAbsent++;
-                            attendanceDetails.push({ date: dateStr, present: false });
-                        }
+                        if (present) { daysWorked++; attendanceDetails.push({ date: dateStr, present: true }); }
+                        else { daysAbsent++; attendanceDetails.push({ date: dateStr, present: false }); }
                     }
                 }
 
@@ -152,24 +149,13 @@
                 });
                 var isPaid = !!paidRecord;
 
-                if (isPaid) {
-                    paidCount++;
-                    totalPayout += parseFloat(paidRecord.Amount || paidRecord.amount || 0);
-                } else {
-                    unpaidCount++;
-                    totalPayout += totalPay;
-                }
+                if (isPaid) { paidCount++; totalPayout += parseFloat(paidRecord.Amount || paidRecord.amount || 0); }
+                else { unpaidCount++; totalPayout += totalPay; }
 
-                html += '<tr>';
-                html += '<td><strong>' + w.name + '</strong></td>';
-                html += '<td>GHS ' + (w.dailyRate || 0).toFixed(2) + '</td>';
-                html += '<td><strong>' + daysWorked + ' days</strong></td>';
-                html += '<td style="color:#ef4444;">' + daysAbsent + ' days</td>';
-                html += '<td><strong>GHS ' + totalPay.toFixed(2) + '</strong></td>';
-                html += '<td><span class="badge ' + (isPaid ? 'badge-paid' : 'badge-unpaid') + '">' + (isPaid ? 'Paid' : 'Unpaid') + '</span></td>';
-                html += '<td>';
+                html += '<tr><td><strong>' + w.name + '</strong></td><td>GHS ' + (w.dailyRate || 0).toFixed(2) + '</td><td><strong>' + daysWorked + ' days</strong></td><td style="color:#ef4444;">' + daysAbsent + ' days</td><td><strong>GHS ' + totalPay.toFixed(2) + '</strong></td><td><span class="badge ' + (isPaid ? 'badge-paid' : 'badge-unpaid') + '">' + (isPaid ? 'Paid' : 'Unpaid') + '</span></td><td>';
                 if (isPaid) {
-                    html += '<button class="btn btn-primary btn-sm" onclick="showSlip(\'' + w.name.replace(/'/g, "\\'") + '\', ' + daysWorked + ', ' + daysAbsent + ', ' + totalPay + ', \'' + (paidRecord.PaidDate || paidRecord.paidDate || '') + '\', \'' + monthLabel + '\', ' + (w.dailyRate || 0) + ', ' + JSON.stringify(attendanceDetails).replace(/"/g, '&quot;') + ')">📄 Slip</button>';
+                    html += '<button class="btn btn-primary btn-sm" onclick="showSlip(\'' + w.name.replace(/'/g, "\\'") + '\', ' + daysWorked + ', ' + daysAbsent + ', ' + totalPay + ', \'' + (paidRecord.PaidDate || paidRecord.paidDate || '') + '\', \'' + monthLabel + '\', ' + (w.dailyRate || 0) + ', ' + JSON.stringify(attendanceDetails).replace(/"/g, '&quot;') + ')">📄 Slip</button> ';
+                    html += '<button class="btn btn-danger btn-sm" onclick="deletePayment(\'' + w.name.replace(/'/g, "\\'") + '\', \'' + monthLabel + '\')">🗑 Delete</button>';
                 } else {
                     html += '<button class="btn btn-success btn-sm" onclick="payWorker(\'' + w.name.replace(/'/g, "\\'") + '\', ' + daysWorked + ', ' + totalPay + ')">💵 Pay Now</button>';
                 }
@@ -182,25 +168,38 @@
             loadHistory();
         }
 
+        // PAY WORKER
         function payWorker(name, days, amount) {
             if (!confirm('Confirm payment of GHS ' + amount.toFixed(2) + ' to ' + name + ' for ' + days + ' days?')) return;
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
             var monthLabel = getMonthName(selectedMonth) + ' ' + selectedYear;
-            payments = payments.filter(function(p) {
-                return !((p.WorkerName || p.workerName) === name && (p.Month || p.month) === monthLabel);
-            });
-            payments.push({
-                WorkerName: name, workerName: name,
-                Month: monthLabel, month: monthLabel,
-                DaysWorked: days, daysWorked: days,
-                Amount: amount, amount: amount,
-                PaidDate: new Date().toLocaleDateString(), paidDate: new Date().toLocaleDateString()
-            });
+            payments = payments.filter(function(p) { return !((p.WorkerName || p.workerName) === name && (p.Month || p.month) === monthLabel); });
+            payments.push({ WorkerName: name, workerName: name, Month: monthLabel, month: monthLabel, DaysWorked: days, daysWorked: days, Amount: amount, amount: amount, PaidDate: new Date().toLocaleDateString(), paidDate: new Date().toLocaleDateString() });
             localStorage.setItem('milling_worker_payments', JSON.stringify(payments));
             loadSummary();
             showToast('✅ Paid GHS ' + amount.toFixed(2) + ' to ' + name);
         }
 
+        // DELETE SINGLE PAYMENT
+        function deletePayment(name, monthLabel) {
+            if (!confirm('⚠️ Delete payment for ' + name + ' (' + monthLabel + ')?\n\nThis will mark them as unpaid again.')) return;
+            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            payments = payments.filter(function(p) { return !((p.WorkerName || p.workerName) === name && (p.Month || p.month) === monthLabel); });
+            localStorage.setItem('milling_worker_payments', JSON.stringify(payments));
+            loadSummary();
+            showToast('🗑 Payment deleted. ' + name + ' is now unpaid.');
+        }
+
+        // CLEAR ALL PAYMENTS
+        function clearAllPayments() {
+            if (!confirm('⚠️⚠️ DELETE ALL PAYMENT RECORDS?\n\nThis will mark ALL workers as unpaid.\n\nThis CANNOT be undone!')) return;
+            if (!confirm('FINAL CONFIRMATION: Clear ALL payments?')) return;
+            localStorage.setItem('milling_worker_payments', JSON.stringify([]));
+            loadSummary();
+            showToast('🗑 All payment records cleared!');
+        }
+
+        // PAYMENT SLIP
         function showSlip(name, daysWorked, daysAbsent, totalPay, paidDate, month, dailyRate, attendanceJSON) {
             var attendanceDetails = JSON.parse(attendanceJSON);
             document.getElementById('slipMonth').textContent = 'Payment Month: ' + month;
@@ -212,9 +211,7 @@
             if (attendanceDetails.length > 0) {
                 html += '<div style="margin-top:10px;font-size:12px;"><strong>Attendance Breakdown:</strong></div>';
                 html += '<div style="max-height:150px;overflow-y:auto;margin-top:5px;">';
-                attendanceDetails.forEach(function(a) {
-                    html += '<div class="slip-row"><span class="label">' + a.date + '</span><span class="val" style="color:' + (a.present ? '#10b981' : '#ef4444') + ';">' + (a.present ? '✅ Present' : '❌ Absent') + '</span></div>';
-                });
+                attendanceDetails.forEach(function(a) { html += '<div class="slip-row"><span class="label">' + a.date + '</span><span class="val" style="color:' + (a.present ? '#10b981' : '#ef4444') + ';">' + (a.present ? '✅ Present' : '❌ Absent') + '</span></div>'; });
                 html += '</div>';
             }
             html += '<div class="slip-total"><div style="font-size:12px;color:var(--text-light);">TOTAL PAYMENT</div><div class="big">GHS ' + totalPay.toFixed(2) + '</div></div>';
@@ -222,7 +219,6 @@
             document.getElementById('slipContent').innerHTML = html;
             document.getElementById('slipOverlay').classList.add('show');
         }
-
         function closeSlip() { document.getElementById('slipOverlay').classList.remove('show'); }
         function printSlip() { window.print(); }
 
@@ -231,12 +227,21 @@
             payments.sort(function(a, b) { return new Date(b.PaidDate || b.paidDate) - new Date(a.PaidDate || a.paidDate); });
             var tbody = document.getElementById('historyTable'), html = '';
             payments.slice(0, 15).forEach(function(p) {
-                html += '<tr><td>' + (p.PaidDate || p.paidDate || '') + '</td><td>' + (p.WorkerName || p.workerName || '') + '</td><td>' + (p.Month || p.month || '') + '</td><td>' + (p.DaysWorked || p.daysWorked || '') + ' days</td><td><strong>GHS ' + parseFloat(p.Amount || p.amount || 0).toFixed(2) + '</strong></td></tr>';
+                html += '<tr><td>' + (p.PaidDate || p.paidDate || '') + '</td><td>' + (p.WorkerName || p.workerName || '') + '</td><td>' + (p.Month || p.month || '') + '</td><td>' + (p.DaysWorked || p.daysWorked || '') + ' days</td><td><strong>GHS ' + parseFloat(p.Amount || p.amount || 0).toFixed(2) + '</strong></td><td><button class="btn btn-danger btn-sm" onclick="deleteHistoryPayment(\'' + (p.WorkerName || p.workerName || '').replace(/'/g, "\\'") + '\', \'' + (p.Month || p.month || '') + '\')">🗑</button></td></tr>';
             });
-            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">No payments recorded</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;">No payments recorded</td></tr>';
         }
 
-        function getMonthName(i) { return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][i]; }
+        function deleteHistoryPayment(name, monthLabel) {
+            if (!confirm('⚠️ Delete payment for ' + name + ' (' + monthLabel + ')?')) return;
+            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            payments = payments.filter(function(p) { return !((p.WorkerName || p.workerName) === name && (p.Month || p.month) === monthLabel); });
+            localStorage.setItem('milling_worker_payments', JSON.stringify(payments));
+            loadSummary();
+            showToast('🗑 Payment deleted.');
+        }
+
+        function getMonthName(i) { return ['January','February','March','April','May','June','July','August','September','October','November','December'][i]; }
         function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
     </script>
 </body>
