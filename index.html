@@ -54,12 +54,11 @@
             <p class="footer-text">© 2025 iTech Systems Solutions | <a href="admin.html">⚙️ Admin Panel</a></p>
         </div>
     </div>
-    <script>
+<script>
     function loadUsers() {
         var select = document.getElementById('userSelect');
         var users = JSON.parse(localStorage.getItem('milling_users')) || [];
         
-        // If no users, create defaults and save them
         if (users.length === 0) {
             users = [
                 { name: 'Administrator', password: '1234' },
@@ -83,8 +82,14 @@
         
         errorMsg.style.display = 'none';
         
-        if (!user) { errorMsg.textContent = 'Please select your name'; errorMsg.style.display = 'block'; return; }
-        if (!pass) { errorMsg.textContent = 'Please enter your password'; errorMsg.style.display = 'block'; return; }
+        if (!user) {
+            alert('Please select your name!');
+            return;
+        }
+        if (!pass) {
+            alert('Please enter your password!');
+            return;
+        }
         
         // Get users from localStorage
         var users = JSON.parse(localStorage.getItem('milling_users')) || [];
@@ -98,13 +103,10 @@
             }
         }
         
-        // Get the correct password for this user
         var correctPassword = foundUser ? (foundUser.password || '1234') : '1234';
         
-        // Check if password matches
         if (pass !== correctPassword) {
-            errorMsg.textContent = 'Invalid password! Please try again.';
-            errorMsg.style.display = 'block';
+            alert('❌ Invalid password! Please try again.');
             return;
         }
         
@@ -118,6 +120,7 @@
         }
     }
 
+    // Allow Enter key to login
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') login();
     });
