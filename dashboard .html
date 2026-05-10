@@ -22,7 +22,7 @@
         .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .btn { padding: 10px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-        .btn-sale { background: var(--primary); } .btn-bread { background: var(--orange); } .btn-att { background: var(--success); } .btn-pay { background: var(--info); } .btn-exp { background: var(--danger); } .btn-pur { background: var(--purple); } .btn-rep { background: var(--teal); } .btn-own { background: #1e293b; } .btn-set { background: #64748b; }
+        .btn-txn { background: var(--primary); } .btn-bread { background: var(--orange); } .btn-att { background: var(--success); } .btn-pay { background: var(--info); } .btn-exp { background: var(--danger); } .btn-pur { background: var(--purple); } .btn-rep { background: var(--teal); } .btn-own { background: #1e293b; } .btn-set { background: #64748b; } .btn-adm { background: #dc2626; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         table th { background: #f8fafc; color: var(--text-light); padding: 8px; text-align: left; font-size: 10px; text-transform: uppercase; border-bottom: 2px solid var(--border); }
         table td { padding: 7px 6px; border-bottom: 1px solid var(--border); color: var(--text); }
@@ -42,6 +42,7 @@
     </div>
 
     <div class="container">
+        <!-- Stats -->
         <div class="stats-row">
             <div class="stat-card" style="border-left-color:var(--primary);"><div class="value" id="totalTxns">0</div><div class="label">Transactions</div></div>
             <div class="stat-card" style="border-left-color:var(--success);"><div class="value" id="totalRev">GHS 0</div><div class="label">Revenue</div></div>
@@ -50,21 +51,24 @@
             <div class="stat-card" style="border-left-color:var(--info);"><div class="value" id="totalMachines">0</div><div class="label">Machines</div></div>
         </div>
 
+        <!-- Quick Actions - ALL PAGES LINKED -->
         <div class="card">
-            <h3>⚡ Quick Actions</h3>
+            <h3>⚡ All Modules</h3>
             <div class="quick-actions">
-                <a href="transaction.html" class="btn btn-sale">📝 New Transaction</a>
-                <a href="bread_flour.html" class="btn btn-bread">🍞 Bread Flour</a>
+                <a href="transaction.html" class="btn btn-txn">📝 New Transaction</a>
                 <a href="attendance.html" class="btn btn-att">👷 Attendance</a>
                 <a href="worker_pay.html" class="btn btn-pay">💵 Worker Pay</a>
                 <a href="expenses.html" class="btn btn-exp">💸 Expenses</a>
                 <a href="purchases.html" class="btn btn-pur">📦 Purchases</a>
+                <a href="bread_flour.html" class="btn btn-bread">🍞 Bread Flour</a>
                 <a href="reports.html" class="btn btn-rep">📊 Reports</a>
                 <a href="owner_view.html" class="btn btn-own">👑 Owner View</a>
                 <a href="settings.html" class="btn btn-set">⚙️ Settings</a>
+                <a href="admin.html" class="btn btn-adm">🔧 Admin Panel</a>
             </div>
         </div>
 
+        <!-- Recent Transactions -->
         <div class="card">
             <h3>📋 Recent Transactions</h3>
             <div style="overflow-x:auto;">
