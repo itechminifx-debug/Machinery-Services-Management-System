@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Machinery Services Pro</title>
+    <style>
+        :root { --primary: #4f46e5; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --info: #3b82f6; --purple: #8b5cf6; --orange: #f97316; --teal: #14b8a6; --bg: #f0f2f5; --card: #ffffff; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background: var(--bg); min-height: 100vh; }
+        .navbar { background: #1e293b; color: white; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .navbar .brand { font-size: 20px; font-weight: 700; } .navbar .brand span { color: #818cf8; }
+        .navbar .user-info { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        .navbar a { color: white; text-decoration: none; font-size: 12px; background: rgba(255,255,255,0.1); padding: 7px 14px; border-radius: 6px; }
+        .navbar .btn-logout { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); text-align: center; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: var(--text); } .stat-card .label { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
+        .card { background: var(--card); border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .card h3 { color: var(--text); font-size: 16px; margin-bottom: 14px; }
+        .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { padding: 10px 14px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; color: white; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; white-space: nowrap; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .btn-txn { background: var(--primary); } .btn-bread { background: var(--orange); } .btn-att { background: var(--success); } .btn-pay { background: var(--info); } .btn-exp { background: var(--danger); } .btn-pur { background: var(--purple); } .btn-rep { background: var(--teal); } .btn-own { background: #1e293b; } .btn-set { background: #64748b; } .btn-adm { background: #dc2626; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        table th { background: #f8fafc; color: var(--text-light); padding: 8px; text-align: left; font-size: 10px; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+        table td { padding: 7px 6px; border-bottom: 1px solid var(--border); color: var(--text); }
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+        .badge-paid { background: #d1fae5; color: #065f46; } .badge-pending { background: #fef3c7; color: #92400e; }
+        @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } .quick-actions .btn { flex: 1; min-width: 100px; justify-content: center; } }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="brand">🏭 Machinery<span>Pro</span></div>
+        <div class="user-info">
+            <span>👤 <span id="userDisplay">Admin</span></span>
+            <a href="admin.html">⚙️ Admin</a>
+            <button class="btn-logout" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card" style="border-left-color:var(--primary);"><div class="value" id="totalTxns">0</div><div class="label">Transactions</div></div>
+            <div class="stat-card" style="border-left-color:var(--success);"><div class="value" id="totalRev">GHS 0</div><div class="label">Revenue</div></div>
+            <div class="stat-card" style="border-left-color:var(--warning);"><div class="value" id="totalWorkers">0</div><div class="label">Workers</div></div>
+            <div class="stat-card" style="border-left-color:var(--danger);"><div class="value" id="totalExp">GHS 0</div><div class="label">Expenses</div></div>
+            <div class="stat-card" style="border-left-color:var(--info);"><div class="value" id="totalMachines">0</div><div class="label">Machines</div></div>
+        </div>
+
+        <!-- Quick Actions - ALL PAGES LINKED -->
+        <div class="card">
+            <h3>⚡ All Modules</h3>
+            <div class="quick-actions">
+                <a href="transaction.html" class="btn btn-txn">📝 New Transaction</a>
+                <a href="attendance.html" class="btn btn-att">👷 Attendance</a>
+                <a href="worker_pay.html" class="btn btn-pay">💵 Worker Pay</a>
+                <a href="expenses.html" class="btn btn-exp">💸 Expenses</a>
+                <a href="purchases.html" class="btn btn-pur">📦 Purchases</a>
+                <a href="bread_flour.html" class="btn btn-bread">🍞 Bread Flour</a>
+                <a href="reports.html" class="btn btn-rep">📊 Reports</a>
+                <a href="owner_view.html" class="btn btn-own">👑 Owner View</a>
+                <a href="settings.html" class="btn btn-set">⚙️ Settings</a>
+                <a href="admin.html" class="btn btn-adm">🔧 Admin Panel</a>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <h3>📋 Recent Transactions</h3>
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>Date</th><th>Time</th><th>Machine</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead>
+                    <tbody id="recentTxns"><tr><td colspan="6" style="text-align:center;color:#999;padding:20px;">No transactions yet</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            document.getElementById('userDisplay').textContent = localStorage.getItem('salesUser') || 'Admin';
+            
+            var txns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            var workers = JSON.parse(localStorage.getItem('milling_workers')) || [];
+            var machines = JSON.parse(localStorage.getItem('milling_machines')) || [];
+            var expenses = JSON.parse(localStorage.getItem('milling_expenses')) || [];
+            
+            document.getElementById('totalTxns').textContent = txns.length;
+            document.getElementById('totalWorkers').textContent = workers.length;
+            document.getElementById('totalMachines').textContent = machines.length;
+            
+            var rev = txns.reduce(function(s, t) { return s + (parseFloat(t.Total || t.total) || 0); }, 0);
+            document.getElementById('totalRev').textContent = 'GHS ' + rev.toLocaleString();
+            
+            var exp = expenses.reduce(function(s, e) { return s + (parseFloat(e.Amount || e.amount) || 0); }, 0);
+            document.getElementById('totalExp').textContent = 'GHS ' + exp.toLocaleString();
+            
+            var recent = txns.slice(-8).reverse();
+            var tbody = document.getElementById('recentTxns');
+            if (recent.length > 0) {
+                var html = '';
+                recent.forEach(function(t) {
+                    html += '<tr><td>' + (t.Date || t.date || '') + '</td><td>' + (t.Time || t.time || '') + '</td><td>' + (t.Machine || t.machine || '') + '</td><td>' + (t.Quantity || t.quantity || '') + '</td><td><strong>GHS ' + (parseFloat(t.Total || t.total || 0)).toLocaleString() + '</strong></td><td><span class="badge ' + ((t.Status || t.status) === 'Paid' ? 'badge-paid' : 'badge-pending') + '">' + (t.Status || t.status || 'Paid') + '</span></td></tr>';
+                });
+                tbody.innerHTML = html;
+            }
+        };
+
+        function logout() { localStorage.removeItem('salesUser'); window.location.href = 'index.html'; }
+    </script>
+</body>
+</html>
