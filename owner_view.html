@@ -5,34 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner View | Machinery Services Pro</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #1e293b; --accent: #818cf8; --success: #10b981; --danger: #ef4444; --info: #3b82f6; --warning: #f59e0b; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #1e293b; --accent: #818cf8; --success: #10b981; --danger: #ef4444; --info: #3b82f6; --warning: #f59e0b; --purple: #8b5cf6; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); min-height: 100vh; padding: 20px; }
         .container { max-width: 950px; margin: 0 auto; }
-        .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 16px 20px; border-radius: 14px; }
+        .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 16px 20px; border-radius: 14px; flex-wrap: wrap; gap: 10px; }
         .topbar .brand { font-size: 20px; font-weight: 700; } .topbar .brand span { color: var(--accent); }
         .topbar a { color: white; text-decoration: none; font-size: 13px; background: rgba(255,255,255,0.1); padding: 7px 14px; border-radius: 6px; }
         .month-selector { background: var(--card); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
         .month-selector select, .month-selector input { padding: 10px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; }
         .month-selector .btn-nav { padding: 10px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; background: var(--primary); color: white; }
         .selected-month { font-size: 16px; font-weight: 700; color: var(--text); }
-        .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .summary-card { background: var(--card); border-radius: 14px; padding: 20px; text-align: center; box-shadow: var(--shadow); border-top: 4px solid var(--primary); }
-        .summary-card .value { font-size: 26px; font-weight: 700; color: var(--text); } .summary-card .label { font-size: 11px; color: var(--text-light); text-transform: uppercase; }
-        .summary-card.revenue { border-top-color: var(--success); } .summary-card.expenses { border-top-color: var(--danger); } .summary-card.profit { border-top-color: var(--info); } .summary-card.pending { border-top-color: var(--warning); }
-        .day-card { background: var(--card); border-radius: 14px; padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow); border-left: 5px solid var(--primary); }
-        .day-card .day-date { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
-        .day-stats { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13px; }
-        .day-stat { text-align: center; } .day-stat .val { font-weight: 700; font-size: 16px; } .day-stat .lbl { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
+
+        .summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .summary-card { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; box-shadow: var(--shadow); border-top: 4px solid var(--primary); }
+        .summary-card .value { font-size: 22px; font-weight: 700; color: var(--text); } .summary-card .label { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
+        .summary-card.revenue { border-top-color: var(--success); } .summary-card.expenses { border-top-color: var(--danger); }
+        .summary-card.purchases { border-top-color: var(--purple); } .summary-card.workerpay { border-top-color: var(--info); }
+        .summary-card.profit { border-top-color: var(--success); } .summary-card.pending { border-top-color: var(--warning); }
+
+        .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow); }
+        .card h3 { color: var(--text); font-size: 16px; margin-bottom: 14px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        table th { background: var(--primary); color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
+        table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+
+        .day-card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 10px; box-shadow: var(--shadow); border-left: 5px solid var(--primary); }
+        .day-card .day-date { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .day-stats { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; }
+        .day-stat { text-align: center; } .day-stat .val { font-weight: 700; font-size: 15px; } .day-stat .lbl { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
         .txn-list { font-size: 12px; color: var(--text-light); margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
         .no-data { text-align: center; color: #999; padding: 30px; }
         .alert-box { padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 8px; }
         .alert-warning { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
         .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; transition: all 0.2s; }
         .btn-primary { background: var(--primary); } .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+
         @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; width: 100%; padding: 20px; } .btn, .month-selector, .topbar a { display: none !important; } }
-        @media (max-width: 600px) { .summary-row { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 700px) { .grid-2 { grid-template-columns: 1fr; } .summary-row { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
@@ -54,49 +67,156 @@
         </div>
 
         <div class="print-area">
+            <!-- Monthly Summary Cards -->
             <div class="summary-row">
-                <div class="summary-card revenue"><div class="value" id="totalRevenue">GHS 0</div><div class="label">Monthly Revenue</div></div>
-                <div class="summary-card expenses"><div class="value" id="totalExpenses">GHS 0</div><div class="label">Monthly Expenses</div></div>
+                <div class="summary-card revenue"><div class="value" id="totalRevenue">GHS 0</div><div class="label">Revenue</div></div>
+                <div class="summary-card expenses"><div class="value" id="totalExpenses">GHS 0</div><div class="label">Expenses</div></div>
+                <div class="summary-card purchases"><div class="value" id="totalPurchases">GHS 0</div><div class="label">Purchases</div></div>
+                <div class="summary-card workerpay"><div class="value" id="totalWorkerPay">GHS 0</div><div class="label">Worker Pay</div></div>
                 <div class="summary-card profit"><div class="value" id="netProfit">GHS 0</div><div class="label">Net Profit</div></div>
                 <div class="summary-card pending"><div class="value" id="pendingAmount">GHS 0</div><div class="label">Pending</div></div>
             </div>
+
+            <!-- Alerts -->
             <div id="alertsContainer" style="margin-bottom:20px;"></div>
-            <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:15px;">📅 Daily Breakdown</div>
+
+            <!-- Profit Breakdown + Bread Summary -->
+            <div class="grid-2">
+                <div class="card">
+                    <h3>📊 Profit Breakdown</h3>
+                    <table>
+                        <tr><td><strong>Revenue</strong></td><td style="text-align:right;" id="breakRevenue">GHS 0</td></tr>
+                        <tr><td style="color:var(--danger);"><strong>(-) Expenses</strong></td><td style="text-align:right;color:var(--danger);" id="breakExpenses">GHS 0</td></tr>
+                        <tr><td style="color:var(--danger);"><strong>(-) Purchases</strong></td><td style="text-align:right;color:var(--danger);" id="breakPurchases">GHS 0</td></tr>
+                        <tr><td style="color:var(--danger);"><strong>(-) Worker Pay</strong></td><td style="text-align:right;color:var(--danger);" id="breakWorkerPay">GHS 0</td></tr>
+                        <tr style="font-size:15px;font-weight:700;background:#f0fdf4;"><td><strong>NET PROFIT</strong></td><td style="text-align:right;color:var(--success);" id="breakProfit">GHS 0</td></tr>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h3>🍞 Bread Flour Summary</h3>
+                    <table>
+                        <tr><td><strong>Total Customers</strong></td><td style="text-align:right;" id="breadCustomers">0</td></tr>
+                        <tr><td><strong>Total Bags Deposited</strong></td><td style="text-align:right;" id="breadTotalBags">0</td></tr>
+                        <tr><td><strong>Active Bags</strong></td><td style="text-align:right;color:var(--success);" id="breadActiveBags">0</td></tr>
+                        <tr><td><strong>Used Bags</strong></td><td style="text-align:right;color:var(--text-light);" id="breadUsedBags">0</td></tr>
+                        <tr><td><strong>Total Flour (kg)</strong></td><td style="text-align:right;font-weight:700;" id="breadTotalKg">0 kg</td></tr>
+                        <tr><td><strong>Flour Used (kg)</strong></td><td style="text-align:right;color:var(--danger);" id="breadUsedKg">0 kg</td></tr>
+                        <tr style="font-size:14px;font-weight:700;background:#f0fdf4;"><td><strong>Remaining (kg)</strong></td><td style="text-align:right;color:var(--success);" id="breadRemainingKg">0 kg</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Breakdown -->
+            <div style="font-size:16px;font-weight:700;color:var(--text);margin:20px 0 15px;">📅 Daily Breakdown</div>
             <div id="dailyBreakdown"><div class="no-data">Loading...</div></div>
         </div>
     </div>
 
     <script>
-        var selectedMonth = new Date().getMonth(), selectedYear = new Date().getFullYear(), allTxns = [], allExp = [], allPur = [], allPay = [];
-        window.onload = function() { document.getElementById('monthSelect').value = selectedMonth; document.getElementById('yearSelect').value = selectedYear; loadData(); };
-        function loadData() { allTxns = JSON.parse(localStorage.getItem('milling_transactions')) || []; allExp = JSON.parse(localStorage.getItem('milling_expenses')) || []; allPur = JSON.parse(localStorage.getItem('milling_purchases')) || []; allPay = JSON.parse(localStorage.getItem('milling_worker_payments')) || []; updateDisplay(); }
-        function updateDisplay() { document.getElementById('selectedMonthDisplay').textContent = getMonthName(selectedMonth) + ' ' + selectedYear; loadOwnerView(); }
+        var selectedMonth = new Date().getMonth(), selectedYear = new Date().getFullYear();
+        var allTxns = [], allExp = [], allPur = [], allPay = [], allBags = [], allWorkers = [], allBreadCustomers = [];
+
+        window.onload = function() {
+            document.getElementById('monthSelect').value = selectedMonth;
+            document.getElementById('yearSelect').value = selectedYear;
+            loadData();
+        };
+
+        function loadData() {
+            allTxns = JSON.parse(localStorage.getItem('milling_transactions')) || [];
+            allExp = JSON.parse(localStorage.getItem('milling_expenses')) || [];
+            allPur = JSON.parse(localStorage.getItem('milling_purchases')) || [];
+            allPay = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            allBags = JSON.parse(localStorage.getItem('milling_bread_bags')) || [];
+            allWorkers = JSON.parse(localStorage.getItem('milling_workers')) || [];
+            allBreadCustomers = JSON.parse(localStorage.getItem('milling_bread_customers')) || [];
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('selectedMonthDisplay').textContent = getMonthName(selectedMonth) + ' ' + selectedYear;
+            loadOwnerView();
+        }
+
         function changeMonth(d) { selectedMonth += d; if (selectedMonth < 0) { selectedMonth = 11; selectedYear--; } if (selectedMonth > 11) { selectedMonth = 0; selectedYear++; } document.getElementById('monthSelect').value = selectedMonth; document.getElementById('yearSelect').value = selectedYear; updateDisplay(); }
         function onMonthChanged() { selectedMonth = parseInt(document.getElementById('monthSelect').value); selectedYear = parseInt(document.getElementById('yearSelect').value); updateDisplay(); }
 
         function loadOwnerView() {
+            // Filter by selected month
             var mt = allTxns.filter(function(t){ var d = new Date(t.Date||t.date); return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
             var me = allExp.filter(function(e){ var d = new Date(e.Date||e.date); return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
             var mp = allPur.filter(function(p){ var d = new Date(p.Date||p.date); return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
             var mpay = allPay.filter(function(p){ var d = new Date(p.PaidDate||p.paidDate); return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear; });
-            var rev = mt.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0), exp = me.reduce(function(s,e){ return s + (parseFloat(e.Amount||e.amount)||0); }, 0), pur = mp.reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0), pay = mpay.reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0);
-            var profit = rev - exp - pur - pay, pending = mt.filter(function(t){ return (t.Status||t.status) === 'Pending'; }).reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
-            document.getElementById('totalRevenue').textContent = 'GHS ' + rev.toLocaleString(); document.getElementById('totalExpenses').textContent = 'GHS ' + exp.toLocaleString(); document.getElementById('netProfit').textContent = 'GHS ' + profit.toLocaleString(); document.getElementById('pendingAmount').textContent = 'GHS ' + pending.toLocaleString();
-            var alerts = ''; if (pending > 0) alerts += '<div class="alert-box alert-warning">⚠️ Pending: <strong>GHS ' + pending.toLocaleString() + '</strong></div>'; if (profit < 0) alerts += '<div class="alert-box alert-warning">⚠️ Negative profit!</div>'; if (rev === 0) alerts += '<div class="alert-box alert-success">📋 No transactions this month.</div>'; if (!alerts) alerts = '<div class="alert-box alert-success">✅ All systems normal.</div>'; document.getElementById('alertsContainer').innerHTML = alerts;
+
+            // Calculate totals
+            var rev = mt.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
+            var exp = me.reduce(function(s,e){ return s + (parseFloat(e.Amount||e.amount)||0); }, 0);
+            var pur = mp.reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0);
+            var pay = mpay.reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0);
+            var profit = rev - exp - pur - pay;
+            var pending = mt.filter(function(t){ return (t.Status||t.status) === 'Pending'; }).reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
+
+            // Update summary cards
+            document.getElementById('totalRevenue').textContent = 'GHS ' + rev.toLocaleString();
+            document.getElementById('totalExpenses').textContent = 'GHS ' + exp.toLocaleString();
+            document.getElementById('totalPurchases').textContent = 'GHS ' + pur.toLocaleString();
+            document.getElementById('totalWorkerPay').textContent = 'GHS ' + pay.toLocaleString();
+            document.getElementById('netProfit').textContent = 'GHS ' + profit.toLocaleString();
+            document.getElementById('pendingAmount').textContent = 'GHS ' + pending.toLocaleString();
+
+            // Profit breakdown
+            document.getElementById('breakRevenue').textContent = 'GHS ' + rev.toLocaleString();
+            document.getElementById('breakExpenses').textContent = '- GHS ' + exp.toLocaleString();
+            document.getElementById('breakPurchases').textContent = '- GHS ' + pur.toLocaleString();
+            document.getElementById('breakWorkerPay').textContent = '- GHS ' + pay.toLocaleString();
+            document.getElementById('breakProfit').textContent = 'GHS ' + profit.toLocaleString();
+
+            // Bread Flour Summary
+            var breadCustomers = allBreadCustomers.length;
+            var totalBags = allBags.length;
+            var activeBags = allBags.filter(function(b){ return b.status === 'Active'; });
+            var usedBags = allBags.filter(function(b){ return b.status === 'Used'; });
+            var totalKg = allBags.reduce(function(s,b){ return s + (parseInt(b.size)||0); }, 0);
+            var usedKg = allBags.reduce(function(s,b){ return s + (parseInt(b.used)||0); }, 0);
+            var remainingKg = totalKg - usedKg;
+            document.getElementById('breadCustomers').textContent = breadCustomers;
+            document.getElementById('breadTotalBags').textContent = totalBags;
+            document.getElementById('breadActiveBags').textContent = activeBags.length;
+            document.getElementById('breadUsedBags').textContent = usedBags.length;
+            document.getElementById('breadTotalKg').textContent = totalKg.toLocaleString() + ' kg';
+            document.getElementById('breadUsedKg').textContent = usedKg.toLocaleString() + ' kg';
+            document.getElementById('breadRemainingKg').textContent = remainingKg.toLocaleString() + ' kg';
+
+            // Alerts
+            var alerts = '';
+            if (pending > 0) alerts += '<div class="alert-box alert-warning">⚠️ Pending Payments: <strong>GHS ' + pending.toLocaleString() + '</strong></div>';
+            if (profit < 0) alerts += '<div class="alert-box alert-warning">⚠️ Net profit is NEGATIVE this month!</div>';
+            if (rev === 0 && alerts === '') alerts += '<div class="alert-box alert-success">📋 No transactions recorded for this month yet.</div>';
+            if (!alerts) alerts = '<div class="alert-box alert-success">✅ All systems normal. Business is profitable!</div>';
+            document.getElementById('alertsContainer').innerHTML = alerts;
+
+            // Daily Breakdown
             var dim = new Date(selectedYear, selectedMonth + 1, 0).getDate(), html = '';
             for (var day = 1; day <= dim; day++) {
-                var ds = new Date(selectedYear, selectedMonth, day).toLocaleDateString(), dt = mt.filter(function(t){ return (t.Date||t.date) === ds; }), de = me.filter(function(e){ return (e.Date||e.date) === ds; }), dr = dt.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0), deTotal = de.reduce(function(s,e){ return s + (parseFloat(e.Amount||e.amount)||0); }, 0);
+                var ds = new Date(selectedYear, selectedMonth, day).toLocaleDateString();
+                var dt = mt.filter(function(t){ return (t.Date||t.date) === ds; });
+                var de = me.filter(function(e){ return (e.Date||e.date) === ds; });
+                var dr = dt.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
+                var deTotal = de.reduce(function(s,e){ return s + (parseFloat(e.Amount||e.amount)||0); }, 0);
+
                 if (dt.length > 0 || de.length > 0) {
                     html += '<div class="day-card"><div class="day-date">📅 ' + new Date(selectedYear, selectedMonth, day).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) + '</div><div class="day-stats"><div class="day-stat"><div class="val" style="color:#10b981;">GHS ' + dr.toLocaleString() + '</div><div class="lbl">Revenue</div></div><div class="day-stat"><div class="val">' + dt.length + '</div><div class="lbl">Trans</div></div><div class="day-stat"><div class="val" style="color:#ef4444;">GHS ' + deTotal.toLocaleString() + '</div><div class="lbl">Expenses</div></div>';
-                    if (dr > 0 || deTotal > 0) { var dp = dr - deTotal; html += '<div class="day-stat"><div class="val" style="color:' + (dp >= 0 ? '#10b981' : '#ef4444') + ';">GHS ' + dp.toLocaleString() + '</div><div class="lbl">Balance</div></div>'; } html += '</div>';
-                    if (dt.length > 0) { html += '<div class="txn-list"><strong>Transactions:</strong> '; var ms = {}; dt.forEach(function(t){ var k = t.Machine||t.machine||'Unknown'; if (!ms[k]) ms[k] = 0; ms[k]++; }); var parts = []; Object.keys(ms).forEach(function(m){ parts.push(ms[m] + 'x ' + m); }); html += parts.join(', ') + '</div>'; } html += '</div>';
+                    if (dr > 0 || deTotal > 0) { var dp = dr - deTotal; html += '<div class="day-stat"><div class="val" style="color:' + (dp >= 0 ? '#10b981' : '#ef4444') + ';">GHS ' + dp.toLocaleString() + '</div><div class="lbl">Balance</div></div>'; }
+                    html += '</div>';
+                    if (dt.length > 0) { html += '<div class="txn-list"><strong>Transactions:</strong> '; var ms = {}; dt.forEach(function(t){ var k = t.Machine||t.machine||'Unknown'; if (!ms[k]) ms[k] = 0; ms[k]++; }); var parts = []; Object.keys(ms).forEach(function(m){ parts.push(ms[m] + 'x ' + m); }); html += parts.join(', ') + '</div>'; }
+                    html += '</div>';
                 }
             }
             document.getElementById('dailyBreakdown').innerHTML = html || '<div class="no-data">📋 No transactions for ' + getMonthName(selectedMonth) + ' ' + selectedYear + '</div>';
         }
 
         function printOwnerView() { window.print(); }
-
         function getMonthName(i) { return ['January','February','March','April','May','June','July','August','September','October','November','December'][i]; }
     </script>
 </body>
