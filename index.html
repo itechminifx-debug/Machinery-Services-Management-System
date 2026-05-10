@@ -21,10 +21,10 @@
         .login-right .subtitle { color: var(--text-light); font-size: 13px; margin-bottom: 30px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; color: #aabbcc; font-size: 12px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        .form-group input { width: 100%; padding: 14px 16px; background: var(--input-bg); border: 2px solid var(--border); border-radius: 10px; color: white; font-size: 15px; transition: all 0.3s; }
-        .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,201,167,0.1); }
+        .form-group input, .form-group select { width: 100%; padding: 14px 16px; background: var(--input-bg); border: 2px solid var(--border); border-radius: 10px; color: white; font-size: 15px; }
+        .form-group select option { background: #1a2736; color: white; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,201,167,0.1); }
         .form-group input::placeholder { color: #5a7a8a; }
-        .error-msg { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
         .btn-login { width: 100%; padding: 15px; background: var(--accent); color: #0f1923; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
         .btn-login:hover { background: var(--accent-hover); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,201,167,0.3); }
         .footer-text { text-align: center; color: #5a7a8a; font-size: 11px; margin-top: 30px; }
@@ -33,7 +33,9 @@
     </style>
 </head>
 <body>
+
     <div class="login-wrapper">
+        <!-- Left Brand Panel -->
         <div class="login-left">
             <div class="brand-icon">🏭</div>
             <h1>Machinery Services Pro</h1>
@@ -45,85 +47,103 @@
                 <li>Profit reports</li>
             </ul>
         </div>
+        
+        <!-- Right Login Form -->
         <div class="login-right">
             <h2>Welcome Back</h2>
             <p class="subtitle">Sign in to your account</p>
-            <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Enter your username"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Enter your password"><div class="error-msg" id="errorMsg">Invalid username or password</div></div>
-            <button class="btn-login" onclick="login()">🚀 Sign In</button>
-            <p class="footer-text">© 2025 iTech Systems Solutions | <a href="admin.html">⚙️ Admin Panel</a></p>
+            
+            <div class="form-group">
+                <label>Username</label>
+                <select id="userSelect">
+                    <option value="">-- Select Your Name --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="passwordInput" placeholder="Enter your password">
+            </div>
+            
+            <button class="btn-login" onclick="doLogin()">🚀 Sign In</button>
+            
+            <p class="footer-text">
+                © 2025 iTech Systems Solutions | <a href="admin.html">⚙️ Admin Panel</a>
+            </p>
         </div>
     </div>
-<script>
-    function loadUsers() {
-        var select = document.getElementById('userSelect');
-        var users = JSON.parse(localStorage.getItem('milling_users')) || [];
-        
-        if (users.length === 0) {
-            users = [
-                { name: 'Administrator', password: '1234' },
-                { name: 'Owner', password: '1234' }
-            ];
-            localStorage.setItem('milling_users', JSON.stringify(users));
-        }
-        
-        select.innerHTML = '<option value="">-- Select Your Name --</option>';
-        users.forEach(function(u) {
-            select.innerHTML += '<option value="' + u.name + '">' + u.name + '</option>';
-        });
-    }
 
-    window.onload = function() { loadUsers(); };
-
-    function login() {
-        var user = document.getElementById('userSelect').value;
-        var pass = document.getElementById('passwordInput').value;
-        var errorMsg = document.getElementById('errorMsg');
-        
-        errorMsg.style.display = 'none';
-        
-        if (!user) {
-            alert('Please select your name!');
-            return;
-        }
-        if (!pass) {
-            alert('Please enter your password!');
-            return;
-        }
-        
-        // Get users from localStorage
-        var users = JSON.parse(localStorage.getItem('milling_users')) || [];
-        
-        // Find the user
-        var foundUser = null;
-        for (var i = 0; i < users.length; i++) {
-            if (users[i].name === user) {
-                foundUser = users[i];
-                break;
+    <script>
+        // Load users from localStorage
+        function loadUsers() {
+            var select = document.getElementById('userSelect');
+            var users = JSON.parse(localStorage.getItem('milling_users')) || [];
+            
+            if (users.length === 0) {
+                users = [
+                    { name: 'Administrator', password: '1234' },
+                    { name: 'Owner', password: '1234' }
+                ];
+                localStorage.setItem('milling_users', JSON.stringify(users));
+            }
+            
+            select.innerHTML = '<option value="">-- Select Your Name --</option>';
+            for (var i = 0; i < users.length; i++) {
+                select.innerHTML += '<option value="' + users[i].name + '">' + users[i].name + '</option>';
             }
         }
-        
-        var correctPassword = foundUser ? (foundUser.password || '1234') : '1234';
-        
-        if (pass !== correctPassword) {
-            alert('❌ Invalid password! Please try again.');
-            return;
-        }
-        
-        // Login success
-        localStorage.setItem('salesUser', user);
-        
-        if (user === 'Owner') {
-            window.location.href = 'owner_view.html';
-        } else {
-            window.location.href = 'dashboard.html';
-        }
-    }
 
-    // Allow Enter key to login
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') login();
-    });
-</script>
+        // Login function
+        function doLogin() {
+            var userSelect = document.getElementById('userSelect');
+            var passInput = document.getElementById('passwordInput');
+            var user = userSelect.value;
+            var pass = passInput.value;
+            
+            if (!user || user === '') {
+                alert('Please select your name!');
+                return;
+            }
+            
+            if (!pass || pass === '') {
+                alert('Please enter your password!');
+                return;
+            }
+            
+            var users = JSON.parse(localStorage.getItem('milling_users')) || [];
+            var foundUser = null;
+            
+            for (var i = 0; i < users.length; i++) {
+                if (users[i].name === user) {
+                    foundUser = users[i];
+                    break;
+                }
+            }
+            
+            var correctPassword = foundUser ? (foundUser.password || '1234') : '1234';
+            
+            if (pass !== correctPassword) {
+                alert('❌ Invalid password! Please try again.\n\nDefault password is: 1234');
+                return;
+            }
+            
+            // Login successful
+            localStorage.setItem('salesUser', user);
+            
+            if (user === 'Owner') {
+                window.location.href = 'owner_view.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Load users when page opens
+        window.onload = function() { loadUsers(); };
+
+        // Allow Enter key to login
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doLogin();
+        });
+    </script>
 </body>
 </html>
