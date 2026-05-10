@@ -26,25 +26,12 @@
         .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; }
         .badge-paid { background: #d1fae5; color: #065f46; } .badge-unpaid { background: #fef3c7; color: #92400e; }
         .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; transition: all 0.2s; }
-        .btn-info { background: var(--info); } .btn-success { background: var(--success); } .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); } .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-info { background: var(--info); } .btn-success { background: var(--success); } .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); }
+        .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; margin: 2px; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
         .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
-        .slip-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
-        .slip-overlay.show { display: flex; }
-        .slip-card { background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; }
-        .slip-card .slip-header { text-align: center; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; }
-        .slip-card .slip-header h2 { color: var(--text); font-size: 20px; }
-        .slip-card .slip-header .company { color: var(--primary); font-weight: 700; font-size: 16px; }
-        .slip-card .slip-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px dotted #eee; }
-        .slip-card .slip-row .label { color: var(--text-light); } .slip-card .slip-row .val { color: var(--text); font-weight: 600; }
-        .slip-card .slip-total { text-align: center; margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--primary); }
-        .slip-card .slip-total .big { font-size: 28px; font-weight: 700; color: var(--success); }
-        .slip-card .slip-footer { text-align: center; margin-top: 20px; font-size: 11px; color: var(--text-light); }
-        .btn-close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
-        .btn-print { width: 100%; margin-top: 15px; }
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; z-index: 1000; display: none; animation: slideDown 0.3s; }
         @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
-        @media print { body * { visibility: hidden; } .slip-overlay, .slip-overlay * { visibility: visible; } .slip-overlay { position: absolute; top: 0; left: 0; background: white; } .slip-card { box-shadow: none; } .btn-close, .btn-print { display: none !important; } }
         @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -52,6 +39,7 @@
     <div class="container">
         <div class="topbar"><h1>💵 Worker Payment (Monthly)</h1><a href="dashboard.html">🔙 Dashboard</a></div>
 
+        <!-- Month Selector -->
         <div class="card">
             <h3>📅 Select Pay Period</h3>
             <div class="form-row">
@@ -61,11 +49,13 @@
             </div>
         </div>
 
+        <!-- Total Payout -->
         <div class="summary-card"><div style="font-size:11px;opacity:0.85;">TOTAL PAYOUT</div><div class="amount" id="totalPayout">GHS 0.00</div><div style="font-size:12px;margin-top:4px;" id="paymentStatus">0 paid / 0 unpaid</div></div>
 
+        <!-- Worker Payment Table -->
         <div class="card">
             <h3>👷 Worker Payment Details</h3>
-            <p style="font-size:11px;color:var(--text-light);margin-bottom:10px;">⚠️ Click <strong>Load</strong> to refresh attendance. Use <strong>Delete</strong> to remove a payment.</p>
+            <p style="font-size:11px;color:var(--text-light);margin-bottom:10px;">Click <strong>Load</strong> to refresh attendance data.</p>
             <div style="overflow-x:auto;">
                 <table><thead><tr><th>Worker</th><th>Daily Rate</th><th>Days Worked</th><th>Absent</th><th>Total Pay</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="paymentTable"><tr><td colspan="7" style="text-align:center;color:#999;">Select month and click Load</td></tr></tbody>
@@ -76,24 +66,15 @@
             </div>
         </div>
 
+        <!-- Payment History -->
         <div class="card">
             <h3>📋 Payment History</h3>
             <table><thead><tr><th>Date Paid</th><th>Worker</th><th>Month</th><th>Days</th><th>Amount</th><th>Action</th></tr></thead>
-                <tbody id="historyTable"><tr><td colspan="6" style="text-align:center;color:#999;">No payments</td></tr></tbody>
+                <tbody id="historyTable"><tr><td colspan="6" style="text-align:center;color:#999;">No payments recorded</td></tr></tbody>
             </table>
         </div>
     </div>
 
-    <!-- PAYMENT SLIP -->
-    <div class="slip-overlay" id="slipOverlay">
-        <div class="slip-card" id="slipCard">
-            <button class="btn-close" onclick="closeSlip()">✕</button>
-            <div class="slip-header"><div class="company">🏭 Machinery Services Pro</div><h2>Payment Slip</h2><div id="slipMonth" style="font-size:13px;color:var(--text-light);"></div></div>
-            <div id="slipContent"></div>
-            <div class="slip-footer">© 2025 iTech Systems Solutions | This is a computer-generated slip</div>
-            <button class="btn btn-primary btn-print" onclick="printSlip()">🖨️ Print Slip</button>
-        </div>
-    </div>
     <div class="toast" id="toast"></div>
 
     <script>
@@ -105,6 +86,7 @@
             loadSummary();
         };
 
+        // ==================== LOAD SUMMARY ====================
         function loadSummary() {
             selectedMonth = parseInt(document.getElementById('payMonth').value);
             selectedYear = parseInt(document.getElementById('payYear').value);
@@ -118,7 +100,7 @@
             var tbody = document.getElementById('paymentTable'), html = '';
 
             if (workers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">No workers added.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:20px;">No workers added. Go to Admin Panel to add workers.</td></tr>';
                 document.getElementById('totalPayout').textContent = 'GHS 0.00';
                 document.getElementById('paymentStatus').textContent = '0 paid / 0 unpaid';
                 document.getElementById('historyTable').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">No payments</td></tr>';
@@ -127,8 +109,6 @@
 
             workers.forEach(function(w) {
                 var daysWorked = 0, daysAbsent = 0;
-                var attendanceDetails = [];
-
                 for (var d = 1; d <= dim; d++) {
                     var dateStr = new Date(selectedYear, selectedMonth, d).toLocaleDateString();
                     var record = attendance.find(function(a) {
@@ -136,14 +116,12 @@
                     });
                     if (record) {
                         var present = (record.Present === 'true' || record.Present === true || record.present === true);
-                        if (present) { daysWorked++; attendanceDetails.push({ date: dateStr, present: true }); }
-                        else { daysAbsent++; attendanceDetails.push({ date: dateStr, present: false }); }
+                        if (present) daysWorked++; else daysAbsent++;
                     }
                 }
 
                 var totalPay = daysWorked * (w.dailyRate || 0);
                 var monthLabel = getMonthName(selectedMonth) + ' ' + selectedYear;
-
                 var paidRecord = payments.find(function(p) {
                     return (p.WorkerName || p.workerName) === w.name && (p.Month || p.month) === monthLabel;
                 });
@@ -153,8 +131,9 @@
                 else { unpaidCount++; totalPayout += totalPay; }
 
                 html += '<tr><td><strong>' + w.name + '</strong></td><td>GHS ' + (w.dailyRate || 0).toFixed(2) + '</td><td><strong>' + daysWorked + ' days</strong></td><td style="color:#ef4444;">' + daysAbsent + ' days</td><td><strong>GHS ' + totalPay.toFixed(2) + '</strong></td><td><span class="badge ' + (isPaid ? 'badge-paid' : 'badge-unpaid') + '">' + (isPaid ? 'Paid' : 'Unpaid') + '</span></td><td>';
+                
                 if (isPaid) {
-                    html += '<button class="btn btn-primary btn-sm" onclick="showSlip(\'' + w.name.replace(/'/g, "\\'") + '\', ' + daysWorked + ', ' + daysAbsent + ', ' + totalPay + ', \'' + (paidRecord.PaidDate || paidRecord.paidDate || '') + '\', \'' + monthLabel + '\', ' + (w.dailyRate || 0) + ', ' + JSON.stringify(attendanceDetails).replace(/"/g, '&quot;') + ')">📄 Slip</button> ';
+                    html += '<button class="btn btn-primary btn-sm" onclick="showSlip2(\'' + w.name.replace(/'/g, "\\'") + '\', ' + daysWorked + ', ' + daysAbsent + ', ' + totalPay + ', \'' + (paidRecord.PaidDate || paidRecord.paidDate || '') + '\', \'' + monthLabel + '\', ' + (w.dailyRate || 0) + ')">📄 Slip</button> ';
                     html += '<button class="btn btn-danger btn-sm" onclick="deletePayment(\'' + w.name.replace(/'/g, "\\'") + '\', \'' + monthLabel + '\')">🗑 Delete</button>';
                 } else {
                     html += '<button class="btn btn-success btn-sm" onclick="payWorker(\'' + w.name.replace(/'/g, "\\'") + '\', ' + daysWorked + ', ' + totalPay + ')">💵 Pay Now</button>';
@@ -168,7 +147,7 @@
             loadHistory();
         }
 
-        // PAY WORKER
+        // ==================== PAY WORKER ====================
         function payWorker(name, days, amount) {
             if (!confirm('Confirm payment of GHS ' + amount.toFixed(2) + ' to ' + name + ' for ' + days + ' days?')) return;
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
@@ -180,7 +159,7 @@
             showToast('✅ Paid GHS ' + amount.toFixed(2) + ' to ' + name);
         }
 
-        // DELETE SINGLE PAYMENT
+        // ==================== DELETE SINGLE PAYMENT ====================
         function deletePayment(name, monthLabel) {
             if (!confirm('⚠️ Delete payment for ' + name + ' (' + monthLabel + ')?\n\nThis will mark them as unpaid again.')) return;
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
@@ -190,7 +169,7 @@
             showToast('🗑 Payment deleted. ' + name + ' is now unpaid.');
         }
 
-        // CLEAR ALL PAYMENTS
+        // ==================== CLEAR ALL PAYMENTS ====================
         function clearAllPayments() {
             if (!confirm('⚠️⚠️ DELETE ALL PAYMENT RECORDS?\n\nThis will mark ALL workers as unpaid.\n\nThis CANNOT be undone!')) return;
             if (!confirm('FINAL CONFIRMATION: Clear ALL payments?')) return;
@@ -199,82 +178,47 @@
             showToast('🗑 All payment records cleared!');
         }
 
-        // PAYMENT SLIP
-       // PAYMENT SLIP - SIMPLE POPUP
-function showSlip(name, daysWorked, daysAbsent, totalPay, paidDate, month, dailyRate, attendanceJSON) {
-    var attendanceDetails = JSON.parse(attendanceJSON);
-    
-    // Build slip HTML
-    var slipHTML = '';
-    slipHTML += '<div style="background:white;padding:30px;max-width:500px;width:90%;border-radius:16px;text-align:left;max-height:80vh;overflow-y:auto;">';
-    slipHTML += '<div style="text-align:center;border-bottom:2px dashed #e2e8f0;padding-bottom:15px;margin-bottom:15px;">';
-    slipHTML += '<div style="color:#4f46e5;font-weight:700;font-size:18px;">🏭 Machinery Services Pro</div>';
-    slipHTML += '<h2 style="margin:5px 0;color:#1e293b;">Payment Slip</h2>';
-    slipHTML += '<div style="font-size:13px;color:#64748b;">Payment Month: ' + month + '</div>';
-    slipHTML += '</div>';
-    
-    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Worker Name</span><span style="font-weight:600;">' + name + '</span></div>';
-    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Daily Rate</span><span style="font-weight:600;">GHS ' + dailyRate.toFixed(2) + '</span></div>';
-    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Days Worked</span><span style="font-weight:600;">' + daysWorked + ' days</span></div>';
-    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Days Absent</span><span style="font-weight:600;color:#ef4444;">' + daysAbsent + ' days</span></div>';
-    
-    if (attendanceDetails.length > 0) {
-        slipHTML += '<div style="margin-top:10px;font-size:13px;"><strong>Attendance Breakdown:</strong></div>';
-        slipHTML += '<div style="max-height:150px;overflow-y:auto;margin-top:5px;font-size:12px;">';
-        attendanceDetails.forEach(function(a) {
-            slipHTML += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #f0f0f0;"><span>' + a.date + '</span><span style="color:' + (a.present ? '#10b981' : '#ef4444') + ';">' + (a.present ? '✅ Present' : '❌ Absent') + '</span></div>';
-        });
-        slipHTML += '</div>';
-    }
-    
-    slipHTML += '<div style="text-align:center;margin-top:15px;padding-top:15px;border-top:2px solid #4f46e5;">';
-    slipHTML += '<div style="font-size:12px;color:#64748b;">TOTAL PAYMENT</div>';
-    slipHTML += '<div style="font-size:30px;font-weight:700;color:#10b981;">GHS ' + totalPay.toFixed(2) + '</div>';
-    slipHTML += '</div>';
-    
-    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;margin-top:10px;"><span style="color:#64748b;">Paid Date</span><span style="font-weight:600;">' + paidDate + '</span></div>';
-    slipHTML += '<div style="text-align:center;margin-top:20px;font-size:11px;color:#999;">© 2025 iTech Systems Solutions</div>';
-    slipHTML += '<button onclick="printSlipNow()" style="width:100%;padding:12px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:15px;">🖨️ Print Slip</button>';
-    slipHTML += '<button onclick="closeSlipPopup()" style="width:100%;padding:10px;background:#e2e8f0;color:#1e293b;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-top:8px;">✕ Close</button>';
-    slipHTML += '</div>';
-    
-    // Create overlay
-    var overlay = document.createElement('div');
-    overlay.id = 'slipPopup';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;';
-    overlay.innerHTML = slipHTML;
-    document.body.appendChild(overlay);
-    
-    // Store for printing
-    window._slipData = { name: name, daysWorked: daysWorked, daysAbsent: daysAbsent, totalPay: totalPay, paidDate: paidDate, month: month, dailyRate: dailyRate, attendanceDetails: attendanceDetails };
-}
+        // ==================== PAYMENT SLIP - SIMPLE POPUP ====================
+        function showSlip2(name, daysWorked, daysAbsent, totalPay, paidDate, month, dailyRate) {
+            var slipHTML = '';
+            slipHTML += '<div style="background:white;padding:25px;max-width:450px;width:90%;border-radius:16px;text-align:left;">';
+            slipHTML += '<h2 style="text-align:center;color:#4f46e5;">🏭 Machinery Services Pro</h2>';
+            slipHTML += '<h3 style="text-align:center;margin:5px 0;">Payment Slip</h3>';
+            slipHTML += '<p style="text-align:center;color:#666;font-size:13px;">' + month + '</p>';
+            slipHTML += '<hr style="border-top:2px dashed #e2e8f0;">';
+            slipHTML += '<p><strong>Worker:</strong> ' + name + '</p>';
+            slipHTML += '<p><strong>Daily Rate:</strong> GHS ' + dailyRate.toFixed(2) + '</p>';
+            slipHTML += '<p><strong>Days Worked:</strong> ' + daysWorked + ' days</p>';
+            slipHTML += '<p style="color:#ef4444;"><strong>Days Absent:</strong> ' + daysAbsent + ' days</p>';
+            slipHTML += '<hr>';
+            slipHTML += '<h2 style="text-align:center;color:#10b981;">TOTAL: GHS ' + totalPay.toFixed(2) + '</h2>';
+            slipHTML += '<p style="text-align:center;"><strong>Paid Date:</strong> ' + paidDate + '</p>';
+            slipHTML += '<p style="text-align:center;color:#999;font-size:11px;">© 2025 iTech Systems Solutions</p>';
+            slipHTML += '<button onclick="window.print()" style="width:100%;padding:12px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;">🖨️ Print Slip</button>';
+            slipHTML += '<button onclick="closeSlipPopup()" style="width:100%;padding:10px;background:#e2e8f0;border:none;border-radius:8px;margin-top:5px;cursor:pointer;font-size:13px;">✕ Close</button>';
+            slipHTML += '</div>';
+            
+            var overlay = document.createElement('div');
+            overlay.id = 'simpleSlip';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;';
+            overlay.innerHTML = slipHTML;
+            document.body.appendChild(overlay);
+        }
 
-function closeSlipPopup() {
-    var popup = document.getElementById('slipPopup');
-    if (popup) popup.remove();
-}
+        function closeSlipPopup() {
+            var popup = document.getElementById('simpleSlip');
+            if (popup) popup.remove();
+        }
 
-function printSlipNow() {
-    window.print();
-}
-
+        // ==================== LOAD HISTORY ====================
         function loadHistory() {
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
             payments.sort(function(a, b) { return new Date(b.PaidDate || b.paidDate) - new Date(a.PaidDate || a.paidDate); });
             var tbody = document.getElementById('historyTable'), html = '';
             payments.slice(0, 15).forEach(function(p) {
-                html += '<tr><td>' + (p.PaidDate || p.paidDate || '') + '</td><td>' + (p.WorkerName || p.workerName || '') + '</td><td>' + (p.Month || p.month || '') + '</td><td>' + (p.DaysWorked || p.daysWorked || '') + ' days</td><td><strong>GHS ' + parseFloat(p.Amount || p.amount || 0).toFixed(2) + '</strong></td><td><button class="btn btn-danger btn-sm" onclick="deleteHistoryPayment(\'' + (p.WorkerName || p.workerName || '').replace(/'/g, "\\'") + '\', \'' + (p.Month || p.month || '') + '\')">🗑</button></td></tr>';
+                html += '<tr><td>' + (p.PaidDate || p.paidDate || '') + '</td><td>' + (p.WorkerName || p.workerName || '') + '</td><td>' + (p.Month || p.month || '') + '</td><td>' + (p.DaysWorked || p.daysWorked || '') + ' days</td><td><strong>GHS ' + parseFloat(p.Amount || p.amount || 0).toFixed(2) + '</strong></td><td><button class="btn btn-danger btn-sm" onclick="deletePayment(\'' + (p.WorkerName || p.workerName || '').replace(/'/g, "\\'") + '\', \'' + (p.Month || p.month || '') + '\')">🗑</button></td></tr>';
             });
             tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;">No payments recorded</td></tr>';
-        }
-
-        function deleteHistoryPayment(name, monthLabel) {
-            if (!confirm('⚠️ Delete payment for ' + name + ' (' + monthLabel + ')?')) return;
-            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
-            payments = payments.filter(function(p) { return !((p.WorkerName || p.workerName) === name && (p.Month || p.month) === monthLabel); });
-            localStorage.setItem('milling_worker_payments', JSON.stringify(payments));
-            loadSummary();
-            showToast('🗑 Payment deleted.');
         }
 
         function getMonthName(i) { return ['January','February','March','April','May','June','July','August','September','October','November','December'][i]; }
