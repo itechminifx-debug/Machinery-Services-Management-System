@@ -200,27 +200,63 @@
         }
 
         // PAYMENT SLIP
-        function showSlip(name, daysWorked, daysAbsent, totalPay, paidDate, month, dailyRate, attendanceJSON) {
-            var attendanceDetails = JSON.parse(attendanceJSON);
-            document.getElementById('slipMonth').textContent = 'Payment Month: ' + month;
-            var html = '';
-            html += '<div class="slip-row"><span class="label">Worker Name</span><span class="val">' + name + '</span></div>';
-            html += '<div class="slip-row"><span class="label">Daily Rate</span><span class="val">GHS ' + dailyRate.toFixed(2) + '</span></div>';
-            html += '<div class="slip-row"><span class="label">Days Worked</span><span class="val">' + daysWorked + ' days</span></div>';
-            html += '<div class="slip-row"><span class="label">Days Absent</span><span class="val" style="color:#ef4444;">' + daysAbsent + ' days</span></div>';
-            if (attendanceDetails.length > 0) {
-                html += '<div style="margin-top:10px;font-size:12px;"><strong>Attendance Breakdown:</strong></div>';
-                html += '<div style="max-height:150px;overflow-y:auto;margin-top:5px;">';
-                attendanceDetails.forEach(function(a) { html += '<div class="slip-row"><span class="label">' + a.date + '</span><span class="val" style="color:' + (a.present ? '#10b981' : '#ef4444') + ';">' + (a.present ? '✅ Present' : '❌ Absent') + '</span></div>'; });
-                html += '</div>';
-            }
-            html += '<div class="slip-total"><div style="font-size:12px;color:var(--text-light);">TOTAL PAYMENT</div><div class="big">GHS ' + totalPay.toFixed(2) + '</div></div>';
-            html += '<div class="slip-row"><span class="label">Paid Date</span><span class="val">' + paidDate + '</span></div>';
-            document.getElementById('slipContent').innerHTML = html;
-            document.getElementById('slipOverlay').classList.add('show');
-        }
-        function closeSlip() { document.getElementById('slipOverlay').classList.remove('show'); }
-        function printSlip() { window.print(); }
+       // PAYMENT SLIP - SIMPLE POPUP
+function showSlip(name, daysWorked, daysAbsent, totalPay, paidDate, month, dailyRate, attendanceJSON) {
+    var attendanceDetails = JSON.parse(attendanceJSON);
+    
+    // Build slip HTML
+    var slipHTML = '';
+    slipHTML += '<div style="background:white;padding:30px;max-width:500px;width:90%;border-radius:16px;text-align:left;max-height:80vh;overflow-y:auto;">';
+    slipHTML += '<div style="text-align:center;border-bottom:2px dashed #e2e8f0;padding-bottom:15px;margin-bottom:15px;">';
+    slipHTML += '<div style="color:#4f46e5;font-weight:700;font-size:18px;">🏭 Machinery Services Pro</div>';
+    slipHTML += '<h2 style="margin:5px 0;color:#1e293b;">Payment Slip</h2>';
+    slipHTML += '<div style="font-size:13px;color:#64748b;">Payment Month: ' + month + '</div>';
+    slipHTML += '</div>';
+    
+    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Worker Name</span><span style="font-weight:600;">' + name + '</span></div>';
+    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Daily Rate</span><span style="font-weight:600;">GHS ' + dailyRate.toFixed(2) + '</span></div>';
+    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Days Worked</span><span style="font-weight:600;">' + daysWorked + ' days</span></div>';
+    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px dotted #eee;"><span style="color:#64748b;">Days Absent</span><span style="font-weight:600;color:#ef4444;">' + daysAbsent + ' days</span></div>';
+    
+    if (attendanceDetails.length > 0) {
+        slipHTML += '<div style="margin-top:10px;font-size:13px;"><strong>Attendance Breakdown:</strong></div>';
+        slipHTML += '<div style="max-height:150px;overflow-y:auto;margin-top:5px;font-size:12px;">';
+        attendanceDetails.forEach(function(a) {
+            slipHTML += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dotted #f0f0f0;"><span>' + a.date + '</span><span style="color:' + (a.present ? '#10b981' : '#ef4444') + ';">' + (a.present ? '✅ Present' : '❌ Absent') + '</span></div>';
+        });
+        slipHTML += '</div>';
+    }
+    
+    slipHTML += '<div style="text-align:center;margin-top:15px;padding-top:15px;border-top:2px solid #4f46e5;">';
+    slipHTML += '<div style="font-size:12px;color:#64748b;">TOTAL PAYMENT</div>';
+    slipHTML += '<div style="font-size:30px;font-weight:700;color:#10b981;">GHS ' + totalPay.toFixed(2) + '</div>';
+    slipHTML += '</div>';
+    
+    slipHTML += '<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:14px;margin-top:10px;"><span style="color:#64748b;">Paid Date</span><span style="font-weight:600;">' + paidDate + '</span></div>';
+    slipHTML += '<div style="text-align:center;margin-top:20px;font-size:11px;color:#999;">© 2025 iTech Systems Solutions</div>';
+    slipHTML += '<button onclick="printSlipNow()" style="width:100%;padding:12px;background:#4f46e5;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-top:15px;">🖨️ Print Slip</button>';
+    slipHTML += '<button onclick="closeSlipPopup()" style="width:100%;padding:10px;background:#e2e8f0;color:#1e293b;border:none;border-radius:8px;font-size:13px;cursor:pointer;margin-top:8px;">✕ Close</button>';
+    slipHTML += '</div>';
+    
+    // Create overlay
+    var overlay = document.createElement('div');
+    overlay.id = 'slipPopup';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;justify-content:center;align-items:center;padding:20px;';
+    overlay.innerHTML = slipHTML;
+    document.body.appendChild(overlay);
+    
+    // Store for printing
+    window._slipData = { name: name, daysWorked: daysWorked, daysAbsent: daysAbsent, totalPay: totalPay, paidDate: paidDate, month: month, dailyRate: dailyRate, attendanceDetails: attendanceDetails };
+}
+
+function closeSlipPopup() {
+    var popup = document.getElementById('slipPopup');
+    if (popup) popup.remove();
+}
+
+function printSlipNow() {
+    window.print();
+}
 
         function loadHistory() {
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
