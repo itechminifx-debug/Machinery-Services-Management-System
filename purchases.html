@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchases | Sales Manager Pro</title>
+    <title>Purchases | Machinery Services Pro</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --purple: #8b5cf6; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --danger: #ef4444; --purple: #8b5cf6; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); min-height: 100vh; padding: 20px; }
-        .container { max-width: 700px; margin: 0 auto; }
+        .container { max-width: 750px; margin: 0 auto; }
         .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .topbar h1 { font-size: 22px; color: var(--text); } .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
         .card { background: var(--card); border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow); }
@@ -23,16 +23,21 @@
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
         table th { background: var(--purple); color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
         table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
-        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; transition: all 0.2s; }
-        .btn-purple { background: var(--purple); } .btn-success { background: var(--success); }
+        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; transition: all 0.2s; }
+        .btn-purple { background: var(--purple); } .btn-success { background: var(--success); } .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); }
+        .btn-sm { padding: 5px 10px; font-size: 10px; } .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
         .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; z-index: 1000; display: none; animation: slideDown 0.3s; }
         @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+        @media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; top: 0; left: 0; width: 100%; } .btn, .btn-row, .topbar, .summary-card, .form-row { display: none !important; } }
         @media (max-width: 600px) { .form-row { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="topbar"><h1>📦 Record Purchase</h1><a href="dashboard.html">🔙 Dashboard</a></div>
+        <div class="topbar"><h1>📦 Purchases</h1><a href="dashboard.html">🔙 Dashboard</a></div>
+
+        <!-- Add Purchase -->
         <div class="card">
             <h3>➕ Add New Purchase</h3>
             <div class="form-row">
@@ -42,13 +47,21 @@
                 <button class="btn btn-purple" onclick="addPurchase()" style="height:42px;">📦 Add</button>
             </div>
         </div>
+
+        <!-- Monthly Total -->
         <div class="summary-card"><div style="font-size:11px;opacity:0.85;">TOTAL THIS MONTH</div><div class="amount" id="monthTotal">GHS 0.00</div></div>
-        <div class="card">
+
+        <!-- Purchase Table -->
+        <div class="card print-area">
             <h3>📋 Purchase History</h3>
             <div style="overflow-x:auto;">
                 <table><thead><tr><th>Date</th><th>Item</th><th>Purpose</th><th>Amount</th><th>Action</th></tr></thead>
                     <tbody id="purchasesTable"><tr><td colspan="5" style="text-align:center;color:#999;">Loading...</td></tr></tbody>
                 </table>
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-primary" onclick="printPurchases()">🖨️ Print Purchases</button>
+                <button class="btn btn-danger" onclick="clearAllPurchases()">🗑 Clear All Purchases</button>
             </div>
         </div>
     </div>
@@ -61,25 +74,61 @@
         function loadPurchases() {
             purchases = JSON.parse(localStorage.getItem('milling_purchases')) || [];
             purchases.sort(function(a,b){ return new Date(b.Date||b.date) - new Date(a.Date||a.date); });
-            var monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString();
+
+            var now = new Date();
+            var monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString();
             var monthTotal = purchases.filter(function(p){ return new Date(p.Date||p.date) >= new Date(monthStart); }).reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0);
             document.getElementById('monthTotal').textContent = 'GHS ' + monthTotal.toLocaleString();
+
             var tbody = document.getElementById('purchasesTable'), html = '';
-            purchases.slice(0,20).forEach(function(p,i){ html += '<tr><td>' + (p.Date||p.date) + '</td><td>' + (p.Item||p.item) + '</td><td>' + (p.Purpose||p.purpose) + '</td><td><strong>GHS ' + parseFloat(p.Amount||p.amount||0).toFixed(2) + '</strong></td><td><button class="btn btn-purple" style="padding:4px 8px;font-size:10px;" onclick="deletePurchase(' + i + ')">🗑</button></td></tr>'; });
-            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">No purchases</td></tr>';
+            purchases.forEach(function(p,i){
+                html += '<tr><td>' + (p.Date||p.date||'') + '</td><td>' + (p.Item||p.item||'') + '</td><td>' + (p.Purpose||p.purpose||'') + '</td><td><strong>GHS ' + parseFloat(p.Amount||p.amount||0).toFixed(2) + '</strong></td><td><button class="btn btn-danger btn-sm" onclick="deletePurchase(' + i + ')">🗑</button></td></tr>';
+            });
+            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;padding:20px;">No purchases recorded</td></tr>';
         }
 
         function addPurchase() {
-            var item = document.getElementById('purchaseItem').value.trim(), purpose = document.getElementById('purchasePurpose').value.trim(), amt = parseFloat(document.getElementById('purchaseAmount').value) || 0;
-            if (!item || !amt) { showToast('Fill all fields!'); return; }
+            var item = document.getElementById('purchaseItem').value.trim();
+            var purpose = document.getElementById('purchasePurpose').value.trim();
+            var amt = parseFloat(document.getElementById('purchaseAmount').value) || 0;
+            if (!item || !amt) { showToast('Please fill all fields!', 'error'); return; }
+
             purchases.push({ Date: new Date().toLocaleDateString(), date: new Date().toLocaleDateString(), Item: item, item: item, Purpose: purpose, purpose: purpose, Amount: amt, amount: amt });
             localStorage.setItem('milling_purchases', JSON.stringify(purchases));
-            document.getElementById('purchaseItem').value = ''; document.getElementById('purchasePurpose').value = ''; document.getElementById('purchaseAmount').value = '';
-            loadPurchases(); showToast('Purchase recorded! 📦');
+            document.getElementById('purchaseItem').value = '';
+            document.getElementById('purchasePurpose').value = '';
+            document.getElementById('purchaseAmount').value = '';
+            loadPurchases();
+            showToast('Purchase recorded! 📦');
         }
 
-        function deletePurchase(i) { if (confirm('Delete?')) { purchases.splice(i, 1); localStorage.setItem('milling_purchases', JSON.stringify(purchases)); loadPurchases(); showToast('Deleted.'); } }
-        function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
+        function deletePurchase(index) {
+            if (!confirm('Delete this purchase?')) return;
+            purchases.splice(index, 1);
+            localStorage.setItem('milling_purchases', JSON.stringify(purchases));
+            loadPurchases();
+            showToast('Purchase deleted.');
+        }
+
+        function clearAllPurchases() {
+            if (!confirm('⚠️⚠️ DELETE ALL PURCHASES?\n\nThis CANNOT be undone!')) return;
+            if (!confirm('FINAL CONFIRMATION: Delete ALL purchases?')) return;
+            localStorage.setItem('milling_purchases', JSON.stringify([]));
+            purchases = [];
+            loadPurchases();
+            showToast('🗑 All purchases cleared!');
+        }
+
+        function printPurchases() {
+            window.print();
+        }
+
+        function showToast(msg, type) {
+            var t = document.getElementById('toast');
+            t.textContent = msg; t.style.display = 'block';
+            t.style.background = type === 'error' ? '#ef4444' : '#0f172a';
+            setTimeout(function() { t.style.display = 'none'; }, 2500);
+        }
     </script>
 </body>
 </html>
