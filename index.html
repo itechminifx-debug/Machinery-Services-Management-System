@@ -55,15 +55,72 @@
         </div>
     </div>
     <script>
-        var DEFAULT_USER = 'admin'; var DEFAULT_PASS = '1234';
-        function login() {
-            var user = document.getElementById('username').value.trim(); var pass = document.getElementById('password').value.trim(); var errorMsg = document.getElementById('errorMsg');
-            if (!user) { errorMsg.textContent = 'Please enter your username'; errorMsg.style.display = 'block'; return; }
-            if (!pass) { errorMsg.textContent = 'Please enter your password'; errorMsg.style.display = 'block'; return; }
-            if (user === DEFAULT_USER && pass === DEFAULT_PASS) { errorMsg.style.display = 'none'; localStorage.setItem('salesUser', user); window.location.href = 'dashboard.html'; }
-            else { errorMsg.textContent = 'Invalid username or password'; errorMsg.style.display = 'block'; }
+    function loadUsers() {
+        var select = document.getElementById('userSelect');
+        var users = JSON.parse(localStorage.getItem('milling_users')) || [];
+        
+        // If no users, create defaults and save them
+        if (users.length === 0) {
+            users = [
+                { name: 'Administrator', password: '1234' },
+                { name: 'Owner', password: '1234' }
+            ];
+            localStorage.setItem('milling_users', JSON.stringify(users));
         }
-        document.addEventListener('keydown', function(e) { if (e.key === 'Enter') login(); });
-    </script>
+        
+        select.innerHTML = '<option value="">-- Select Your Name --</option>';
+        users.forEach(function(u) {
+            select.innerHTML += '<option value="' + u.name + '">' + u.name + '</option>';
+        });
+    }
+
+    window.onload = function() { loadUsers(); };
+
+    function login() {
+        var user = document.getElementById('userSelect').value;
+        var pass = document.getElementById('passwordInput').value;
+        var errorMsg = document.getElementById('errorMsg');
+        
+        errorMsg.style.display = 'none';
+        
+        if (!user) { errorMsg.textContent = 'Please select your name'; errorMsg.style.display = 'block'; return; }
+        if (!pass) { errorMsg.textContent = 'Please enter your password'; errorMsg.style.display = 'block'; return; }
+        
+        // Get users from localStorage
+        var users = JSON.parse(localStorage.getItem('milling_users')) || [];
+        
+        // Find the user
+        var foundUser = null;
+        for (var i = 0; i < users.length; i++) {
+            if (users[i].name === user) {
+                foundUser = users[i];
+                break;
+            }
+        }
+        
+        // Get the correct password for this user
+        var correctPassword = foundUser ? (foundUser.password || '1234') : '1234';
+        
+        // Check if password matches
+        if (pass !== correctPassword) {
+            errorMsg.textContent = 'Invalid password! Please try again.';
+            errorMsg.style.display = 'block';
+            return;
+        }
+        
+        // Login success
+        localStorage.setItem('salesUser', user);
+        
+        if (user === 'Owner') {
+            window.location.href = 'owner_view.html';
+        } else {
+            window.location.href = 'dashboard.html';
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') login();
+    });
+</script>
 </body>
 </html>
