@@ -3,48 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worker Payment | Sales Manager Pro</title>
+    <title>Worker Payment | Machinery Services Pro</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --info: #3b82f6; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --info: #3b82f6; --danger: #ef4444; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); min-height: 100vh; padding: 20px; }
-        
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; }
         .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .topbar h1 { font-size: 22px; color: var(--text); }
         .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
-        
         .card { background: var(--card); border-radius: 16px; padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow); }
         .card h3 { color: var(--text); font-size: 17px; margin-bottom: 16px; }
-        
         .form-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
         .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-weight: 600; color: var(--text); margin-bottom: 5px; font-size: 11px; text-transform: uppercase; }
         .form-group input, .form-group select { width: 100%; padding: 11px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; background: var(--card); }
         .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
-        
         .summary-card { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 16px 20px; border-radius: 12px; text-align: center; margin-bottom: 15px; }
         .summary-card .amount { font-size: 28px; font-weight: 700; }
-        
         table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 10px; }
         table th { background: var(--primary); color: white; padding: 10px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
         table td { padding: 8px; border-bottom: 1px solid var(--border); color: var(--text); }
         .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; }
         .badge-paid { background: #d1fae5; color: #065f46; } .badge-unpaid { background: #fef3c7; color: #92400e; }
-        
-        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; }
-        .btn-info { background: var(--info); } .btn-success { background: var(--success); }
-        
-        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #0f172a; color: white; padding: 14px 28px; border-radius: 50px; font-size: 14px; z-index: 1000; display: none; animation: slideDown 0.3s; }
-        @keyframes slideDown { from { transform: translateX(-50%) translateY(-80px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
-        
+        .btn { padding: 10px 16px; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: white; white-space: nowrap; transition: all 0.2s; }
+        .btn-info { background: var(--info); } .btn-success { background: var(--success); } .btn-primary { background: var(--primary); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+
+        /* Payment Slip */
+        .slip-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+        .slip-overlay.show { display: flex; }
+        .slip-card { background: white; border-radius: 16px; padding: 30px; max-width: 500px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; }
+        .slip-card .slip-header { text-align: center; border-bottom: 2px dashed #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; }
+        .slip-card .slip-header h2 { color: var(--text); font-size: 20px; }
+        .slip-card .slip-header .company { color: var(--primary); font-weight: 700; font-size: 16px; }
+        .slip-card .slip-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; border-bottom: 1px dotted #eee; }
+        .slip-card .slip-row .label { color: var(--text-light); }
+        .slip-card .slip-row .val { color: var(--text); font-weight: 600; }
+        .slip-card .slip-total { text-align: center; margin-top: 15px; padding-top: 15px; border-top: 2px solid var(--primary); }
+        .slip-card .slip-total .big { font-size: 28px; font-weight: 700; color: var(--success); }
+        .slip-card .slip-footer { text-align: center; margin-top: 20px; font-size: 11px; color: var(--text-light); }
+        .btn-close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+        .btn-print { width: 100%; margin-top: 15px; }
+
+        @media print {
+            body * { visibility: hidden; }
+            .slip-overlay, .slip-overlay * { visibility: visible; }
+            .slip-overlay { position: absolute; top: 0; left: 0; background: white; }
+            .slip-card { box-shadow: none; }
+            .btn-close, .btn-print { display: none !important; }
+        }
         @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="topbar"><h1>💵 Worker Payment (Monthly)</h1><a href="dashboard.html">🔙 Dashboard</a></div>
-        
+
         <div class="card">
             <h3>📅 Select Pay Period</h3>
             <div class="form-row">
@@ -53,18 +68,18 @@
                 <button class="btn btn-info" onclick="loadSummary()" style="height:42px;">📊 Load</button>
             </div>
         </div>
-        
+
         <div class="summary-card"><div style="font-size:11px;opacity:0.85;">TOTAL PAYOUT</div><div class="amount" id="totalPayout">GHS 0.00</div><div style="font-size:12px;margin-top:4px;" id="paymentStatus">0 paid / 0 unpaid</div></div>
-        
+
         <div class="card">
             <h3>👷 Worker Payment Details</h3>
             <div style="overflow-x:auto;">
-                <table><thead><tr><th>Worker</th><th>Daily Rate</th><th>Days Worked</th><th>Total Pay</th><th>Status</th><th>Action</th></tr></thead>
-                    <tbody id="paymentTable"><tr><td colspan="6" style="text-align:center;color:#999;">Select month and click Load</td></tr></tbody>
+                <table><thead><tr><th>Worker</th><th>Daily Rate</th><th>Days Worked</th><th>Absent</th><th>Total Pay</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="paymentTable"><tr><td colspan="7" style="text-align:center;color:#999;">Select month and click Load</td></tr></tbody>
                 </table>
             </div>
         </div>
-        
+
         <div class="card">
             <h3>📋 Payment History</h3>
             <table><thead><tr><th>Date Paid</th><th>Worker</th><th>Month</th><th>Days</th><th>Amount</th></tr></thead>
@@ -72,43 +87,104 @@
             </table>
         </div>
     </div>
-    <div class="toast" id="toast"></div>
+
+    <!-- PAYMENT SLIP OVERLAY -->
+    <div class="slip-overlay" id="slipOverlay">
+        <div class="slip-card" id="slipCard">
+            <button class="btn-close" onclick="closeSlip()">✕</button>
+            <div class="slip-header">
+                <div class="company">🏭 Machinery Services Pro</div>
+                <h2>Payment Slip</h2>
+                <div id="slipMonth" style="font-size:13px;color:var(--text-light);"></div>
+            </div>
+            <div id="slipContent"></div>
+            <div class="slip-footer">© 2025 iTech Systems Solutions | This is a computer-generated slip</div>
+            <button class="btn btn-primary btn-print" onclick="printSlip()">🖨️ Print Slip</button>
+        </div>
+    </div>
 
     <script>
-        var selectedMonth = new Date().getMonth(), selectedYear = new Date().getFullYear();
+        var selectedMonth = new Date().getMonth(), selectedYear = new Date().getFullYear(), allWorkers = [], allAttendance = [], allPayments = [], currentSlipData = null;
+
         window.onload = function() { document.getElementById('payMonth').value = selectedMonth; document.getElementById('payYear').value = selectedYear; loadSummary(); };
 
         function loadSummary() {
             selectedMonth = parseInt(document.getElementById('payMonth').value); selectedYear = parseInt(document.getElementById('payYear').value);
-            var workers = JSON.parse(localStorage.getItem('milling_workers')) || [];
-            var attendance = JSON.parse(localStorage.getItem('milling_attendance')) || [];
-            var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
+            allWorkers = JSON.parse(localStorage.getItem('milling_workers')) || [];
+            allAttendance = JSON.parse(localStorage.getItem('milling_attendance')) || [];
+            allPayments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
             var dim = new Date(selectedYear, selectedMonth + 1, 0).getDate(), totalPayout = 0, paidCount = 0, unpaidCount = 0;
             var tbody = document.getElementById('paymentTable'), html = '';
-            
-            workers.forEach(function(w) {
-                var daysWorked = 0;
-                for (var d = 1; d <= dim; d++) { var ds = new Date(selectedYear, selectedMonth, d).toLocaleDateString(); if (attendance.find(function(a){ return (a.Date||a.date) === ds && (a.WorkerName||a.workerName) === w.name && (a.Present==='true'||a.Present===true||a.present===true); })) daysWorked++; }
+
+            allWorkers.forEach(function(w) {
+                var daysWorked = 0, daysAbsent = 0;
+                var attendanceDetails = [];
+                for (var d = 1; d <= dim; d++) {
+                    var ds = new Date(selectedYear, selectedMonth, d).toLocaleDateString();
+                    var record = allAttendance.find(function(a){ return (a.Date||a.date) === ds && (a.WorkerName||a.workerName) === w.name; });
+                    if (record) {
+                        if (record.Present === 'true' || record.Present === true || record.present === true) { daysWorked++; attendanceDetails.push({ date: ds, present: true }); }
+                        else { daysAbsent++; attendanceDetails.push({ date: ds, present: false }); }
+                    }
+                }
                 var totalPay = daysWorked * (w.dailyRate || 0), ml = getMonthName(selectedMonth) + ' ' + selectedYear;
-                var paidRec = payments.find(function(p){ return (p.WorkerName||p.workerName) === w.name && (p.Month||p.month) === ml; });
+                var paidRec = allPayments.find(function(p){ return (p.WorkerName||p.workerName) === w.name && (p.Month||p.month) === ml; });
                 var isPaid = !!paidRec;
                 if (isPaid) { paidCount++; totalPayout += parseFloat(paidRec.Amount||paidRec.amount||0); } else { unpaidCount++; totalPayout += totalPay; }
-                html += '<tr><td><strong>' + w.name + '</strong></td><td>GHS ' + (w.dailyRate||0).toFixed(2) + '</td><td>' + daysWorked + ' days</td><td><strong>GHS ' + totalPay.toFixed(2) + '</strong></td><td><span class="badge ' + (isPaid?'badge-paid':'badge-unpaid') + '">' + (isPaid?'Paid':'Unpaid') + '</span></td><td>' + (isPaid ? '<span style="color:#999;">Paid ' + (paidRec.PaidDate||paidRec.paidDate||'') + '</span>' : '<button class="btn btn-success" onclick="payWorker(\'' + w.name.replace(/'/g,"\\'") + '\', ' + daysWorked + ', ' + totalPay + ')" style="padding:5px 10px;font-size:11px;">💵 Pay</button>') + '</td></tr>';
+                html += '<tr><td><strong>' + w.name + '</strong></td><td>GHS ' + (w.dailyRate||0).toFixed(2) + '</td><td>' + daysWorked + ' days</td><td style="color:#ef4444;">' + daysAbsent + ' days</td><td><strong>GHS ' + totalPay.toFixed(2) + '</strong></td><td><span class="badge ' + (isPaid?'badge-paid':'badge-unpaid') + '">' + (isPaid?'Paid':'Unpaid') + '</span></td><td>';
+                if (isPaid) {
+                    html += '<button class="btn btn-primary" style="padding:5px 10px;font-size:11px;" onclick="showSlip(\'' + w.name.replace(/'/g,"\\'") + '\', ' + daysWorked + ', ' + daysAbsent + ', ' + totalPay + ', \'' + (paidRec.PaidDate||paidRec.paidDate||'') + '\', \'' + ml + '\', ' + (w.dailyRate||0) + ', ' + JSON.stringify(attendanceDetails).replace(/"/g,'&quot;') + ')">📄 Slip</button>';
+                } else {
+                    html += '<button class="btn btn-success" style="padding:5px 10px;font-size:11px;" onclick="payWorker(\'' + w.name.replace(/'/g,"\\'") + '\', ' + daysWorked + ', ' + totalPay + ')">💵 Pay</button>';
+                }
+                html += '</td></tr>';
             });
-            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;">No workers</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center;color:#999;">No workers</td></tr>';
             document.getElementById('totalPayout').textContent = 'GHS ' + totalPayout.toLocaleString();
             document.getElementById('paymentStatus').textContent = paidCount + ' paid / ' + unpaidCount + ' unpaid';
             loadHistory();
         }
 
         function payWorker(name, days, amount) {
-            if (!confirm('Pay GHS ' + amount.toFixed(2) + ' to ' + name + '?')) return;
+            if (!confirm('Pay GHS ' + amount.toFixed(2) + ' to ' + name + ' for ' + days + ' days?')) return;
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
             payments = payments.filter(function(p){ return !((p.WorkerName||p.workerName) === name && (p.Month||p.month) === getMonthName(selectedMonth) + ' ' + selectedYear); });
             payments.push({ WorkerName: name, workerName: name, Month: getMonthName(selectedMonth) + ' ' + selectedYear, month: getMonthName(selectedMonth) + ' ' + selectedYear, DaysWorked: days, daysWorked: days, Amount: amount, amount: amount, PaidDate: new Date().toLocaleDateString(), paidDate: new Date().toLocaleDateString() });
             localStorage.setItem('milling_worker_payments', JSON.stringify(payments));
-            loadSummary(); showToast('✅ Paid GHS ' + amount.toFixed(2) + ' to ' + name);
+            loadSummary();
         }
+
+        function showSlip(name, daysWorked, daysAbsent, totalPay, paidDate, month, dailyRate, attendanceJSON) {
+            var attendanceDetails = JSON.parse(attendanceJSON);
+            currentSlipData = { name: name, daysWorked: daysWorked, daysAbsent: daysAbsent, totalPay: totalPay, paidDate: paidDate, month: month, dailyRate: dailyRate, attendance: attendanceDetails };
+
+            document.getElementById('slipMonth').textContent = 'Payment Month: ' + month;
+
+            var html = '';
+            html += '<div class="slip-row"><span class="label">Worker Name</span><span class="val">' + name + '</span></div>';
+            html += '<div class="slip-row"><span class="label">Daily Rate</span><span class="val">GHS ' + dailyRate.toFixed(2) + '</span></div>';
+            html += '<div class="slip-row"><span class="label">Days Worked</span><span class="val">' + daysWorked + ' days</span></div>';
+            html += '<div class="slip-row"><span class="label">Days Absent</span><span class="val" style="color:#ef4444;">' + daysAbsent + ' days</span></div>';
+            
+            // Attendance breakdown
+            if (attendanceDetails.length > 0) {
+                html += '<div style="margin-top:10px;font-size:12px;"><strong>Attendance Breakdown:</strong></div>';
+                html += '<div style="max-height:150px;overflow-y:auto;margin-top:5px;">';
+                attendanceDetails.forEach(function(a) {
+                    html += '<div class="slip-row"><span class="label">' + a.date + '</span><span class="val" style="color:' + (a.present ? '#10b981' : '#ef4444') + ';">' + (a.present ? '✅ Present' : '❌ Absent') + '</span></div>';
+                });
+                html += '</div>';
+            }
+
+            html += '<div class="slip-total"><div style="font-size:12px;color:var(--text-light);">TOTAL PAYMENT</div><div class="big">GHS ' + totalPay.toFixed(2) + '</div></div>';
+            html += '<div class="slip-row"><span class="label">Paid Date</span><span class="val">' + paidDate + '</span></div>';
+
+            document.getElementById('slipContent').innerHTML = html;
+            document.getElementById('slipOverlay').classList.add('show');
+        }
+
+        function closeSlip() { document.getElementById('slipOverlay').classList.remove('show'); }
+        function printSlip() { window.print(); }
 
         function loadHistory() {
             var payments = JSON.parse(localStorage.getItem('milling_worker_payments')) || [];
@@ -119,7 +195,6 @@
         }
 
         function getMonthName(i) { return ['January','February','March','April','May','June','July','August','September','October','November','December'][i]; }
-        function showToast(msg) { var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block'; setTimeout(function() { t.style.display = 'none'; }, 2500); }
     </script>
 </body>
 </html>
