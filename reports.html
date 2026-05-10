@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reports | Machinery Services Pro</title>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --danger: #ef4444; --info: #3b82f6; --warning: #f59e0b; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        :root { --bg: #f0f2f5; --card: #ffffff; --primary: #4f46e5; --success: #10b981; --danger: #ef4444; --info: #3b82f6; --warning: #f59e0b; --purple: #8b5cf6; --text: #1e293b; --text-light: #64748b; --border: #e2e8f0; --shadow: 0 2px 12px rgba(0,0,0,0.04); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
         body { background: var(--bg); min-height: 100vh; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 950px; margin: 0 auto; }
         .topbar { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .topbar h1 { font-size: 22px; color: var(--text); } .topbar a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 14px; }
         .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--card); border-radius: 12px; padding: 5px; box-shadow: var(--shadow); }
         .tab { flex: 1; padding: 12px; border: none; background: transparent; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--text-light); transition: all 0.2s; }
         .tab.active { background: var(--primary); color: white; }
         .panel { display: none; } .panel.active { display: block; }
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .stat-card { background: var(--card); border-radius: 14px; padding: 16px; text-align: center; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
-        .stat-card .value { font-size: 24px; font-weight: 700; color: var(--text); } .stat-card .label { font-size: 10px; color: var(--text-light); text-transform: uppercase; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); border-radius: 14px; padding: 14px; text-align: center; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+        .stat-card .value { font-size: 22px; font-weight: 700; color: var(--text); } .stat-card .label { font-size: 9px; color: var(--text-light); text-transform: uppercase; }
         .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow); }
         .card h3 { color: var(--text); font-size: 16px; margin-bottom: 14px; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
@@ -47,6 +47,7 @@
                     <div class="stat-card"><div class="value" id="dRevenue">GHS 0</div><div class="label">Revenue</div></div>
                     <div class="stat-card" style="border-left-color:var(--success);"><div class="value" id="dTransactions">0</div><div class="label">Transactions</div></div>
                     <div class="stat-card" style="border-left-color:var(--danger);"><div class="value" id="dExpenses">GHS 0</div><div class="label">Expenses</div></div>
+                    <div class="stat-card" style="border-left-color:var(--purple);"><div class="value" id="dPurchases">GHS 0</div><div class="label">Purchases</div></div>
                     <div class="stat-card" style="border-left-color:var(--info);"><div class="value" id="dBalance">GHS 0</div><div class="label">Balance</div></div>
                 </div>
                 <div class="card"><h3>📋 Today's Transactions</h3><table><thead><tr><th>Time</th><th>Machine/Customer</th><th>Qty</th><th>Total</th><th>Status</th></tr></thead><tbody id="dailyTable"><tr><td colspan="5" style="text-align:center;color:#999;">Loading...</td></tr></tbody></table></div>
@@ -86,12 +87,25 @@
         <!-- ==================== SUMMARY ==================== -->
         <div id="panel-summary" class="panel">
             <div class="print-area">
-                <div class="card"><h3>📋 Overall Summary</h3><table>
-                    <tr><td><strong>Total Transactions</strong></td><td style="text-align:right;" id="sTransactions">0</td></tr>
-                    <tr><td><strong>Total Revenue</strong></td><td style="text-align:right;" id="sRevenue">GHS 0</td></tr>
-                    <tr><td><strong>Pending Payments</strong></td><td style="text-align:right;color:var(--warning);" id="sPending">GHS 0</td></tr>
-                    <tr><td><strong>Active Bread Bags</strong></td><td style="text-align:right;" id="sBags">0</td></tr>
-                    <tr><td><strong>Active Workers</strong></td><td style="text-align:right;" id="sWorkers">0</td></tr>
+                <div class="stats-row">
+                    <div class="stat-card"><div class="value" id="sTransactions">0</div><div class="label">Total Trans</div></div>
+                    <div class="stat-card" style="border-left-color:var(--success);"><div class="value" id="sRevenue">GHS 0</div><div class="label">Total Revenue</div></div>
+                    <div class="stat-card" style="border-left-color:var(--danger);"><div class="value" id="sExpenses">GHS 0</div><div class="label">Total Expenses</div></div>
+                    <div class="stat-card" style="border-left-color:var(--purple);"><div class="value" id="sPurchases">GHS 0</div><div class="label">Total Purchases</div></div>
+                    <div class="stat-card" style="border-left-color:var(--warning);"><div class="value" id="sPending">GHS 0</div><div class="label">Pending</div></div>
+                    <div class="stat-card" style="border-left-color:var(--info);"><div class="value" id="sNet">GHS 0</div><div class="label">Net Balance</div></div>
+                    <div class="stat-card"><div class="value" id="sBags">0</div><div class="label">Active Bags</div></div>
+                    <div class="stat-card" style="border-left-color:var(--success);"><div class="value" id="sWorkers">0</div><div class="label">Workers</div></div>
+                </div>
+                <div class="card"><h3>📋 Overall Financial Summary</h3><table>
+                    <tr><td><strong>Total Revenue (All Time)</strong></td><td style="text-align:right;" id="sumRevenue">GHS 0</td></tr>
+                    <tr><td style="color:var(--danger);"><strong>(-) Total Expenses</strong></td><td style="text-align:right;color:var(--danger);" id="sumExpenses">GHS 0</td></tr>
+                    <tr><td style="color:var(--danger);"><strong>(-) Total Purchases</strong></td><td style="text-align:right;color:var(--danger);" id="sumPurchases">GHS 0</td></tr>
+                    <tr style="font-size:15px;font-weight:700;background:#f0fdf4;"><td><strong>NET BALANCE</strong></td><td style="text-align:right;color:var(--success);" id="sumNet">GHS 0</td></tr>
+                    <tr><td colspan="2" style="padding-top:10px;"></td></tr>
+                    <tr><td><strong>Pending Payments</strong></td><td style="text-align:right;color:var(--warning);" id="sumPending">GHS 0</td></tr>
+                    <tr><td><strong>Active Bread Bags</strong></td><td style="text-align:right;" id="sumBags">0</td></tr>
+                    <tr><td><strong>Active Workers</strong></td><td style="text-align:right;" id="sumWorkers">0</td></tr>
                 </table></div>
             </div>
             <div class="btn-row"><button class="btn btn-primary" onclick="printSection()">🖨️ Print Summary Report</button></div>
@@ -123,21 +137,26 @@
 
         function printSection() { window.print(); }
 
-        // Daily
+        // ==================== DAILY ====================
         function loadDaily() {
             var dt = allTxns.filter(function(t){ return (t.Date||t.date) === today; });
             var rev = dt.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
             var exp = allExp.filter(function(e){ return (e.Date||e.date) === today; }).reduce(function(s,e){ return s + (parseFloat(e.Amount||e.amount)||0); }, 0);
+            var pur = allPur.filter(function(p){ return (p.Date||p.date) === today; }).reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0);
+            var balance = rev - exp - pur;
+
             document.getElementById('dRevenue').textContent = 'GHS ' + rev.toLocaleString();
             document.getElementById('dTransactions').textContent = dt.length;
             document.getElementById('dExpenses').textContent = 'GHS ' + exp.toLocaleString();
-            document.getElementById('dBalance').textContent = 'GHS ' + (rev - exp).toLocaleString();
+            document.getElementById('dPurchases').textContent = 'GHS ' + pur.toLocaleString();
+            document.getElementById('dBalance').textContent = 'GHS ' + balance.toLocaleString();
+
             var tbody = document.getElementById('dailyTable'), html = '';
             dt.slice(-10).reverse().forEach(function(t){ html += '<tr><td>' + (t.Time||t.time||'') + '</td><td>' + (t.Machine||t.machine||'') + '</td><td>' + (t.Quantity||t.quantity||'') + '</td><td>GHS ' + parseFloat(t.Total||t.total||0).toLocaleString() + '</td><td>' + (t.Status||t.status||'Paid') + '</td></tr>'; });
             tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">No transactions</td></tr>';
         }
 
-        // Monthly
+        // ==================== MONTHLY ====================
         function loadMonthly() {
             var mt = allTxns.filter(function(t){ return new Date(t.Date||t.date) >= new Date(monthStart); });
             var rev = mt.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
@@ -157,7 +176,7 @@
             document.getElementById('calcProfit').textContent = 'GHS ' + profit.toLocaleString();
         }
 
-        // By Machine
+        // ==================== BY MACHINE ====================
         function loadMachines() {
             var mt = allTxns.filter(function(t){ return new Date(t.Date||t.date) >= new Date(monthStart); });
             var map = {};
@@ -167,16 +186,31 @@
             tbody.innerHTML = html || '<tr><td colspan="3" style="text-align:center;color:#999;">No data</td></tr>';
         }
 
-        // Summary
+        // ==================== SUMMARY ====================
         function loadSummary() {
             var rev = allTxns.reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
+            var exp = allExp.reduce(function(s,e){ return s + (parseFloat(e.Amount||e.amount)||0); }, 0);
+            var pur = allPur.reduce(function(s,p){ return s + (parseFloat(p.Amount||p.amount)||0); }, 0);
             var pending = allTxns.filter(function(t){ return (t.Status||t.status) === 'Pending'; }).reduce(function(s,t){ return s + (parseFloat(t.Total||t.total)||0); }, 0);
+            var net = rev - exp - pur;
             var activeBags = allBags.filter(function(b){ return b.status === 'Active'; });
+
             document.getElementById('sTransactions').textContent = allTxns.length;
             document.getElementById('sRevenue').textContent = 'GHS ' + rev.toLocaleString();
+            document.getElementById('sExpenses').textContent = 'GHS ' + exp.toLocaleString();
+            document.getElementById('sPurchases').textContent = 'GHS ' + pur.toLocaleString();
             document.getElementById('sPending').textContent = 'GHS ' + pending.toLocaleString();
+            document.getElementById('sNet').textContent = 'GHS ' + net.toLocaleString();
             document.getElementById('sBags').textContent = activeBags.length;
             document.getElementById('sWorkers').textContent = allWorkers.length;
+
+            document.getElementById('sumRevenue').textContent = 'GHS ' + rev.toLocaleString();
+            document.getElementById('sumExpenses').textContent = '- GHS ' + exp.toLocaleString();
+            document.getElementById('sumPurchases').textContent = '- GHS ' + pur.toLocaleString();
+            document.getElementById('sumNet').textContent = 'GHS ' + net.toLocaleString();
+            document.getElementById('sumPending').textContent = 'GHS ' + pending.toLocaleString();
+            document.getElementById('sumBags').textContent = activeBags.length;
+            document.getElementById('sumWorkers').textContent = allWorkers.length;
         }
     </script>
 </body>
